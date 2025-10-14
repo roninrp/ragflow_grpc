@@ -54,10 +54,10 @@ make setup
 This installs:
 - uv and a virtual environment for the project
 - python=3.10 and pins it to it
-- dependencies from requirements-dev.txt and grpc_ext/requirements.txt
+- dependencies from requirements-dev.txt and `grpc_ext/requirements.txt`
 - pre-commit hooks
 - turns down docker launched servers if any and removes orphans
-- builds no-cache docker container images using docker-compose-grpc.yml in ragflow/docker/
+- builds no-cache docker container images using docker-compose-grpc.yml in `ragflow_grpc/docker/`
 
 ### Starting the System
 To startup the servers, run from the root folder ragflow/:
@@ -66,7 +66,7 @@ make up
 ```
 
 This:
-- launches the docker containers built earlier via docker compose using the same docker-compose-grpc.yml in ragflow/docker/
+- launches the docker containers built earlier via docker compose using the same docker-compose-grpc.yml in `ragflow_grpc/docker/`
 - runs pytest to test for HTTP endpoints of Ragflow accessed by the gRPC server and
 - gRPC client methods for communicating with Ragflow.
 
@@ -144,6 +144,7 @@ make test
 These are located in `grpc_ext/grpc_server`
 These include:
 - `endpoint_test.py` which tests Ragflow's endpoints accessed by the gRPC server.
+- `grpc_server_test.py` tests if the grpc server is still up on port `50051`.
 - `grpc_async_ragclient_test.py` used by pytest for testing `grpc_async_ragclient.py` functions with all servers up.
 
 

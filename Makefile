@@ -71,7 +71,7 @@ test:
 	@echo "=========================================================="
 	@echo "Testing launched servers along with grpc client"
 	@echo "=========================================================="
-	cd grpc_ext/grpc_server/ && uv run pytest -v endpoint_test.py grpc_async_ragclient_test.py
+	cd grpc_ext/grpc_server/ && uv run pytest -v endpoint_test.py grpc_server_test.py grpc_async_ragclient_test.py
 
 # Build sphinx like documentation for codes within grpc_ext/
 docs:
