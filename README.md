@@ -2,7 +2,7 @@
 
 This repository contains an **asynchronous gRPC server-client system** integrated with 3 **Ragflow’s HTTP endpoints**.
 
-It provides a structured approach for connecting backend services to Ragflow’s AI-based retrieval and reasoning capabilities through fast, concurrent gRPC communication. These can be readily extended to the HTTP endpoints mentioned in Ragflow docs.(link)
+It provides a structured approach for connecting backend services to Ragflow’s AI-based retrieval and reasoning capabilities through fast, concurrent gRPC communication. These can be readily extended to the HTTP endpoints mentioned in [Ragflow docs](https://ragflow.io/docs/dev/http_api_reference)
 
 The system is containerized with **Docker Compose**, enabling quick local setup and deployment.
 
@@ -21,7 +21,7 @@ Given this implementation, it can be seemlessly developed to incorporate more of
 ---
 
 ## 🧱 Project Structure
-The project uses Ragflows modules and files and therefore the system requirements are similar to that of Ragflow's with certain additional dependencies(ref). Apart from a few changes to Ragflow's files the main files are located within `ragflow/grpc_ext`.
+The project uses Ragflows modules and files and therefore the system requirements are similar to that of Ragflow's with certain additional dependencies(ref). Apart from a few changes to Ragflow's files the main files are located within `ragflow_grpc/grpc_ext`.
 ```
 grpc_ext/
 ├── Dockerfile
@@ -46,7 +46,7 @@ The Makefile in ragflow/ will make sure your system meets the following requirem
 ---
 ## ⚙️ Usage guide
 ### Setting up the System
-To install, run from the projects root folder ragflow/:
+To install, run from the projects root folder `ragflow_grpc/`:
 ```
 make setup
 ```
@@ -135,7 +135,7 @@ These include:
 - `grpc_async_ragclient_test.py` used by pytest for testing `grpc_async_ragclient.py` functions with all servers up.
 
 ## 🧪 Testing
-These can be excuted from `ragflow/`
+These can be excuted from `ragflow_grpc/`
 ```
 make test
 ```
@@ -150,10 +150,10 @@ These include:
 ---
 
 ## 📘⚙️ Docs related to gRPC services
-Sphinx like docs can be found in 📚 [grpc_ext/docs/_build/html/index.html](grpc_ext/docs/_build/html/index.html).
+Sphinx like docs can be found in 📚 `grpc_ext/docs/_build/html/index.html`.
 
 These are placed in `grpc_ext/docs` and can be generated for the documentation in `grpc_ext/` by running
 ```
 make docs
 ```
-from the root folder (`ragflow`) and can be found in `grpc_ext/docs/_build/html/index.html`.
+from the root folder (`ragflow_grpc`) and can be found in `grpc_ext/docs/_build/html/index.html`.
