@@ -11,13 +11,14 @@ from api.utils import health_utils
 from api.common.exceptions import AdminException, UserAlreadyExistsError, UserNotFoundError
 from config import SERVICE_CONFIGS
 
+
 class UserMgr:
     @staticmethod
     def get_all_users():
         users = UserService.get_all_users()
         result = []
         for user in users:
-            result.append({'email': user.email, 'nickname': user.nickname, 'create_date': user.create_date, 'is_active': user.is_active})
+            result.append({"email": user.email, "nickname": user.nickname, "create_date": user.create_date, "is_active": user.is_active})
         return result
 
     @staticmethod
@@ -26,19 +27,21 @@ class UserMgr:
         users = UserService.query_user_by_email(username)
         result = []
         for user in users:
-            result.append({
-                'email': user.email,
-                'language': user.language,
-                'last_login_time': user.last_login_time,
-                'is_authenticated': user.is_authenticated,
-                'is_active': user.is_active,
-                'is_anonymous': user.is_anonymous,
-                'login_channel': user.login_channel,
-                'status': user.status,
-                'is_superuser': user.is_superuser,
-                'create_date': user.create_date,
-                'update_date': user.update_date
-            })
+            result.append(
+                {
+                    "email": user.email,
+                    "language": user.language,
+                    "last_login_time": user.last_login_time,
+                    "is_authenticated": user.is_authenticated,
+                    "is_active": user.is_active,
+                    "is_anonymous": user.is_anonymous,
+                    "login_channel": user.login_channel,
+                    "status": user.status,
+                    "is_superuser": user.is_superuser,
+                    "create_date": user.create_date,
+                    "update_date": user.update_date,
+                }
+            )
         return result
 
     @staticmethod
@@ -100,8 +103,8 @@ class UserMgr:
         # format activate_status before handle
         _activate_status = activate_status.lower()
         target_status = {
-            'on': ActiveEnum.ACTIVE.value,
-            'off': ActiveEnum.INACTIVE.value,
+            "on": ActiveEnum.ACTIVE.value,
+            "off": ActiveEnum.INACTIVE.value,
         }.get(_activate_status)
         if not target_status:
             raise AdminException(f"Invalid activate_status: {activate_status}")
@@ -111,8 +114,8 @@ class UserMgr:
         UserService.update_user(usr.id, {"is_active": target_status})
         return f"Turn {_activate_status} user activate status successfully!"
 
-class UserServiceMgr:
 
+class UserServiceMgr:
     @staticmethod
     def get_user_datasets(username):
         # use email to find user.
@@ -142,15 +145,10 @@ class UserServiceMgr:
         tenant_ids = [m["tenant_id"] for m in tenants]
         # filter permitted agents and owned agents
         res = UserCanvasService.get_all_agents_by_tenant_ids(tenant_ids, usr.id)
-        return [{
-            'title': r['title'],
-            'permission': r['permission'],
-            'canvas_type': r['canvas_type'],
-            'canvas_category': r['canvas_category']
-        } for r in res]
+        return [{"title": r["title"], "permission": r["permission"], "canvas_type": r["canvas_type"], "canvas_category": r["canvas_category"]} for r in res]
+
 
 class ServiceMgr:
-
     @staticmethod
     def get_all_services():
         result = []
@@ -167,19 +165,14 @@ class ServiceMgr:
     def get_service_details(service_id: int):
         service_id = int(service_id)
         configs = SERVICE_CONFIGS.configs
-        service_config_mapping = {
-            c.id: {
-                'name': c.name,
-                'detail_func_name': c.detail_func_name
-            } for c in configs
-        }
+        service_config_mapping = {c.id: {"name": c.name, "detail_func_name": c.detail_func_name} for c in configs}
         service_info = service_config_mapping.get(service_id, {})
         if not service_info:
             raise AdminException(f"Invalid service_id: {service_id}")
 
-        detail_func = getattr(health_utils, service_info.get('detail_func_name'))
+        detail_func = getattr(health_utils, service_info.get("detail_func_name"))
         res = detail_func()
-        res.update({'service_name': service_info.get('name')})
+        res.update({"service_name": service_info.get("name")})
         return res
 
     @staticmethod

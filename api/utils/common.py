@@ -14,9 +14,9 @@
 #  limitations under the License.
 #
 
+
 def string_to_bytes(string):
-    return string if isinstance(
-        string, bytes) else string.encode(encoding="utf-8")
+    return string if isinstance(string, bytes) else string.encode(encoding="utf-8")
 
 
 def bytes_to_string(byte):
@@ -30,7 +30,7 @@ def convert_bytes(size_in_bytes: int) -> str:
     if size_in_bytes == 0:
         return "0 B"
 
-    units = ['B', 'KB', 'MB', 'GB', 'TB', 'PB']
+    units = ["B", "KB", "MB", "GB", "TB", "PB"]
     i = 0
     size = float(size_in_bytes)
 

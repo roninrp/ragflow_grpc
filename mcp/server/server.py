@@ -149,15 +149,15 @@ class RAGFlowConnector:
     ):
         if document_ids is None:
             document_ids = []
-        
+
         # If no dataset_ids provided or empty list, get all available dataset IDs
         if not dataset_ids:
             dataset_list_str = self.list_datasets()
             dataset_ids = []
-            
+
             # Parse the dataset list to extract IDs
             if dataset_list_str:
-                for line in dataset_list_str.strip().split('\n'):
+                for line in dataset_list_str.strip().split("\n"):
                     if line.strip():
                         try:
                             dataset_info = json.loads(line.strip())
@@ -165,7 +165,7 @@ class RAGFlowConnector:
                         except (json.JSONDecodeError, KeyError):
                             # Skip malformed lines
                             continue
-        
+
         data_json = {
             "page": page,
             "page_size": page_size,
@@ -375,20 +375,9 @@ async def list_tools(*, connector) -> list[types.Tool]:
             inputSchema={
                 "type": "object",
                 "properties": {
-                    "dataset_ids": {
-                        "type": "array",
-                        "items": {"type": "string"},
-                        "description": "Optional array of dataset IDs to search. If not provided or empty, all datasets will be searched."
-                    },
-                    "document_ids": {
-                        "type": "array",
-                        "items": {"type": "string"},
-                        "description": "Optional array of document IDs to search within."
-                    },
-                    "question": {
-                        "type": "string",
-                        "description": "The question or query to search for."
-                    },
+                    "dataset_ids": {"type": "array", "items": {"type": "string"}, "description": "Optional array of dataset IDs to search. If not provided or empty, all datasets will be searched."},
+                    "document_ids": {"type": "array", "items": {"type": "string"}, "description": "Optional array of document IDs to search within."},
+                    "question": {"type": "string", "description": "The question or query to search for."},
                     "page": {
                         "type": "integer",
                         "description": "Page number for pagination",
@@ -460,15 +449,14 @@ async def call_tool(name: str, arguments: dict, *, connector) -> list[types.Text
         rerank_id = arguments.get("rerank_id")
         force_refresh = arguments.get("force_refresh", False)
 
-        
         # If no dataset_ids provided or empty list, get all available dataset IDs
         if not dataset_ids:
             dataset_list_str = connector.list_datasets()
             dataset_ids = []
-            
+
             # Parse the dataset list to extract IDs
             if dataset_list_str:
-                for line in dataset_list_str.strip().split('\n'):
+                for line in dataset_list_str.strip().split("\n"):
                     if line.strip():
                         try:
                             dataset_info = json.loads(line.strip())
@@ -476,7 +464,7 @@ async def call_tool(name: str, arguments: dict, *, connector) -> list[types.Text
                         except (json.JSONDecodeError, KeyError):
                             # Skip malformed lines
                             continue
-        
+
         return connector.retrieval(
             dataset_ids=dataset_ids,
             document_ids=document_ids,

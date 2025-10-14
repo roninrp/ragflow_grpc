@@ -34,7 +34,6 @@ from selenium.webdriver.support.ui import WebDriverWait
 from webdriver_manager.chrome import ChromeDriverManager
 
 
-
 CONTENT_TYPE_MAP = {
     # Office
     "docx": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
@@ -186,11 +185,12 @@ INVITE_EMAIL_TMPL = """
 <p>If you did not request this, please ignore this email.</p>
 """
 
+
 def send_invite_email(to_email, invite_url, tenant_id, inviter):
-    from api.apps import  app
+    from api.apps import app
+
     with app.app_context():
-        msg = Message(subject="RAGFlow Invitation",
-                      recipients=[to_email])
+        msg = Message(subject="RAGFlow Invitation", recipients=[to_email])
         msg.html = render_template_string(
             INVITE_EMAIL_TMPL,
             email=to_email,

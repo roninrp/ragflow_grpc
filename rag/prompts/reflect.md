@@ -41,11 +41,11 @@ Results: {{ call.result }}
 
 ### Reflection Guidelines:
 - **Simple Tasks (4-5 points)**: ~50-100 words, focus on completion status and immediate next step
-- **Moderate Tasks (6-8 points)**: ~100-200 words, include core details and main risks  
+- **Moderate Tasks (6-8 points)**: ~100-200 words, include core details and main risks
 - **Complex Tasks (9-12 points)**: ~200-300 words, provide full analysis and alternatives
 
 ### 1. Goal Achievement Status
- - Does the current outcome align with the original purpose of this task phase? 
+ - Does the current outcome align with the original purpose of this task phase?
  - If not, what critical gaps exist?
 
 ### 2. Step Completion Check

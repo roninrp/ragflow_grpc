@@ -29,13 +29,12 @@ from rag.settings import TAG_FLD, PAGERANK_FLD
 from rag.utils import singleton, get_float
 from api.utils.file_utils import get_project_base_directory
 from api.utils.common import convert_bytes
-from rag.utils.doc_store_conn import DocStoreConnection, MatchExpr, OrderByExpr, MatchTextExpr, MatchDenseExpr, \
-    FusionExpr
+from rag.utils.doc_store_conn import DocStoreConnection, MatchExpr, OrderByExpr, MatchTextExpr, MatchDenseExpr, FusionExpr
 from rag.nlp import is_english, rag_tokenizer
 
 ATTEMPT_TIME = 2
 
-logger = logging.getLogger('ragflow.es_conn')
+logger = logging.getLogger("ragflow.es_conn")
 
 
 @singleton
@@ -72,10 +71,9 @@ class ESConnection(DocStoreConnection):
     def _connect(self):
         self.es = Elasticsearch(
             settings.ES["hosts"].split(","),
-            basic_auth=(settings.ES["username"], settings.ES[
-                "password"]) if "username" in settings.ES and "password" in settings.ES else None,
+            basic_auth=(settings.ES["username"], settings.ES["password"]) if "username" in settings.ES and "password" in settings.ES else None,
             verify_certs=False,
-            timeout=600
+            timeout=600,
         )
         if self.es:
             self.info = self.es.info()
@@ -103,9 +101,8 @@ class ESConnection(DocStoreConnection):
             return True
         try:
             from elasticsearch.client import IndicesClient
-            return IndicesClient(self.es).create(index=indexName,
-                                                 settings=self.mapping["settings"],
-                                                 mappings=self.mapping["mappings"])
+
+            return IndicesClient(self.es).create(index=indexName, settings=self.mapping["settings"], mappings=self.mapping["mappings"])
         except Exception:
             logger.exception("ESConnection.createIndex error %s" % (indexName))
 
@@ -140,17 +137,18 @@ class ESConnection(DocStoreConnection):
     """
 
     def search(
-            self, selectFields: list[str],
-            highlightFields: list[str],
-            condition: dict,
-            matchExprs: list[MatchExpr],
-            orderBy: OrderByExpr,
-            offset: int,
-            limit: int,
-            indexNames: str | list[str],
-            knowledgebaseIds: list[str],
-            aggFields: list[str] = [],
-            rank_feature: dict | None = None
+        self,
+        selectFields: list[str],
+        highlightFields: list[str],
+        condition: dict,
+        matchExprs: list[MatchExpr],
+        orderBy: OrderByExpr,
+        offset: int,
+        limit: int,
+        indexNames: str | list[str],
+        knowledgebaseIds: list[str],
+        aggFields: list[str] = [],
+        rank_feature: dict | None = None,
     ):
         """
         Refers to https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl.html
@@ -167,8 +165,7 @@ class ESConnection(DocStoreConnection):
                 if v == 0:
                     bqry.filter.append(Q("range", available_int={"lt": 1}))
                 else:
-                    bqry.filter.append(
-                        Q("bool", must_not=Q("range", available_int={"lt": 1})))
+                    bqry.filter.append(Q("bool", must_not=Q("range", available_int={"lt": 1})))
                 continue
             if not v:
                 continue
@@ -177,16 +174,13 @@ class ESConnection(DocStoreConnection):
             elif isinstance(v, str) or isinstance(v, int):
                 bqry.filter.append(Q("term", **{k: v}))
             else:
-                raise Exception(
-                    f"Condition `{str(k)}={str(v)}` value type is {str(type(v))}, expected to be int, str or list.")
+                raise Exception(f"Condition `{str(k)}={str(v)}` value type is {str(type(v))}, expected to be int, str or list.")
 
         s = Search()
         vector_similarity_weight = 0.5
         for m in matchExprs:
             if isinstance(m, FusionExpr) and m.method == "weighted_sum" and "weights" in m.fusion_params:
-                assert len(matchExprs) == 3 and isinstance(matchExprs[0], MatchTextExpr) and isinstance(matchExprs[1],
-                                                                                                        MatchDenseExpr) and isinstance(
-                    matchExprs[2], FusionExpr)
+                assert len(matchExprs) == 3 and isinstance(matchExprs[0], MatchTextExpr) and isinstance(matchExprs[1], MatchDenseExpr) and isinstance(matchExprs[2], FusionExpr)
                 weights = m.fusion_params["weights"]
                 vector_similarity_weight = get_float(weights.split(",")[1])
         for m in matchExprs:
@@ -194,24 +188,22 @@ class ESConnection(DocStoreConnection):
                 minimum_should_match = m.extra_options.get("minimum_should_match", 0.0)
                 if isinstance(minimum_should_match, float):
                     minimum_should_match = str(int(minimum_should_match * 100)) + "%"
-                bqry.must.append(Q("query_string", fields=m.fields,
-                                   type="best_fields", query=m.matching_text,
-                                   minimum_should_match=minimum_should_match,
-                                   boost=1))
+                bqry.must.append(Q("query_string", fields=m.fields, type="best_fields", query=m.matching_text, minimum_should_match=minimum_should_match, boost=1))
                 bqry.boost = 1.0 - vector_similarity_weight
 
             elif isinstance(m, MatchDenseExpr):
-                assert (bqry is not None)
+                assert bqry is not None
                 similarity = 0.0
                 if "similarity" in m.extra_options:
                     similarity = m.extra_options["similarity"]
-                s = s.knn(m.vector_column_name,
-                          m.topn,
-                          m.topn * 2,
-                          query_vector=list(m.embedding_data),
-                          filter=bqry.to_dict(),
-                          similarity=similarity,
-                          )
+                s = s.knn(
+                    m.vector_column_name,
+                    m.topn,
+                    m.topn * 2,
+                    query_vector=list(m.embedding_data),
+                    filter=bqry.to_dict(),
+                    similarity=similarity,
+                )
 
         if bqry and rank_feature:
             for fld, sc in rank_feature.items():
@@ -229,8 +221,7 @@ class ESConnection(DocStoreConnection):
             for field, order in orderBy.fields:
                 order = "asc" if order == 0 else "desc"
                 if field in ["page_num_int", "top_int"]:
-                    order_info = {"order": order, "unmapped_type": "float",
-                                  "mode": "avg", "numeric_type": "double"}
+                    order_info = {"order": order, "unmapped_type": "float", "mode": "avg", "numeric_type": "double"}
                 elif field.endswith("_int") or field.endswith("_flt"):
                     order_info = {"order": order, "unmapped_type": "float"}
                 else:
@@ -239,22 +230,24 @@ class ESConnection(DocStoreConnection):
             s = s.sort(*orders)
 
         for fld in aggFields:
-            s.aggs.bucket(f'aggs_{fld}', 'terms', field=fld, size=1000000)
+            s.aggs.bucket(f"aggs_{fld}", "terms", field=fld, size=1000000)
 
         if limit > 0:
-            s = s[offset:offset + limit]
+            s = s[offset : offset + limit]
         q = s.to_dict()
         logger.debug(f"ESConnection.search {str(indexNames)} query: " + json.dumps(q))
 
         for i in range(ATTEMPT_TIME):
             try:
-                #print(json.dumps(q, ensure_ascii=False))
-                res = self.es.search(index=indexNames,
-                                     body=q,
-                                     timeout="600s",
-                                     # search_type="dfs_query_then_fetch",
-                                     track_total_hits=True,
-                                     _source=True)
+                # print(json.dumps(q, ensure_ascii=False))
+                res = self.es.search(
+                    index=indexNames,
+                    body=q,
+                    timeout="600s",
+                    # search_type="dfs_query_then_fetch",
+                    track_total_hits=True,
+                    _source=True,
+                )
                 if str(res.get("timed_out", "")).lower() == "true":
                     raise Exception("Es Timeout.")
                 logger.debug(f"ESConnection.search {str(indexNames)} res: " + str(res))
@@ -273,8 +266,11 @@ class ESConnection(DocStoreConnection):
     def get(self, chunkId: str, indexName: str, knowledgebaseIds: list[str]) -> dict | None:
         for i in range(ATTEMPT_TIME):
             try:
-                res = self.es.get(index=(indexName),
-                                  id=chunkId, source=True, )
+                res = self.es.get(
+                    index=(indexName),
+                    id=chunkId,
+                    source=True,
+                )
                 if str(res.get("timed_out", "")).lower() == "true":
                     raise Exception("Es Timeout.")
                 chunk = res["_source"]
@@ -297,16 +293,14 @@ class ESConnection(DocStoreConnection):
             d_copy = copy.deepcopy(d)
             d_copy["kb_id"] = knowledgebaseId
             meta_id = d_copy.pop("id", "")
-            operations.append(
-                {"index": {"_index": indexName, "_id": meta_id}})
+            operations.append({"index": {"_index": indexName, "_id": meta_id}})
             operations.append(d_copy)
 
         res = []
         for _ in range(ATTEMPT_TIME):
             try:
                 res = []
-                r = self.es.bulk(index=(indexName), operations=operations,
-                                 refresh=False, timeout="60s")
+                r = self.es.bulk(index=(indexName), operations=operations, refresh=False, timeout="60s")
                 if re.search(r"False", str(r["errors"]), re.IGNORECASE):
                     return res
 
@@ -338,15 +332,14 @@ class ESConnection(DocStoreConnection):
                     if "feas" != k.split("_")[-1]:
                         continue
                     try:
-                        self.es.update(index=indexName, id=chunkId, script=f"ctx._source.remove(\"{k}\");")
+                        self.es.update(index=indexName, id=chunkId, script=f'ctx._source.remove("{k}");')
                     except Exception:
                         logger.exception(f"ESConnection.update(index={indexName}, id={chunkId}, doc={json.dumps(condition, ensure_ascii=False)}) got exception")
                 try:
                     self.es.update(index=indexName, id=chunkId, doc=doc)
                     return True
                 except Exception as e:
-                    logger.exception(
-                        f"ESConnection.update(index={indexName}, id={chunkId}, doc={json.dumps(condition, ensure_ascii=False)}) got exception: "+str(e))
+                    logger.exception(f"ESConnection.update(index={indexName}, id={chunkId}, doc={json.dumps(condition, ensure_ascii=False)}) got exception: " + str(e))
                     break
             return False
 
@@ -363,8 +356,7 @@ class ESConnection(DocStoreConnection):
             elif isinstance(v, str) or isinstance(v, int):
                 bqry.filter.append(Q("term", **{k: v}))
             else:
-                raise Exception(
-                    f"Condition `{str(k)}={str(v)}` value type is {str(type(v))}, expected to be int, str or list.")
+                raise Exception(f"Condition `{str(k)}={str(v)}` value type is {str(type(v))}, expected to be int, str or list.")
         scripts = []
         params = {}
         for k, v in newValue.items():
@@ -394,11 +386,8 @@ class ESConnection(DocStoreConnection):
                 scripts.append(f"ctx._source.{k}=params.pp_{k};")
                 params[f"pp_{k}"] = json.dumps(v, ensure_ascii=False)
             else:
-                raise Exception(
-                    f"newValue `{str(k)}={str(v)}` value type is {str(type(v))}, expected to be int, str.")
-        ubq = UpdateByQuery(
-            index=indexName).using(
-            self.es).query(bqry)
+                raise Exception(f"newValue `{str(k)}={str(v)}` value type is {str(type(v))}, expected to be int, str.")
+        ubq = UpdateByQuery(index=indexName).using(self.es).query(bqry)
         ubq = ubq.script(source="".join(scripts), params=params)
         ubq = ubq.params(refresh=True)
         ubq = ubq.params(slices=5)
@@ -451,10 +440,7 @@ class ESConnection(DocStoreConnection):
         logger.debug("ESConnection.delete query: " + json.dumps(qry.to_dict()))
         for _ in range(ATTEMPT_TIME):
             try:
-                res = self.es.delete_by_query(
-                    index=indexName,
-                    body=Search().query(qry).to_dict(),
-                    refresh=True)
+                res = self.es.delete_by_query(index=indexName, body=Search().query(qry).to_dict(), refresh=True)
                 return res["deleted"]
             except ConnectionTimeout:
                 logger.exception("ES request timeout")
@@ -525,8 +511,7 @@ class ESConnection(DocStoreConnection):
             txts = []
             for t in re.split(r"[.?!;\n]", txt):
                 for w in keywords:
-                    t = re.sub(r"(^|[ .?/'\"\(\)!,:;-])(%s)([ .?/'\"\(\)!,:;-])" % re.escape(w), r"\1<em>\2</em>\3", t,
-                               flags=re.IGNORECASE | re.MULTILINE)
+                    t = re.sub(r"(^|[ .?/'\"\(\)!,:;-])(%s)([ .?/'\"\(\)!,:;-])" % re.escape(w), r"\1<em>\2</em>\3", t, flags=re.IGNORECASE | re.MULTILINE)
                 if not re.search(r"<em>[^<>]+</em>", t, flags=re.IGNORECASE | re.MULTILINE):
                     continue
                 txts.append(t)
@@ -552,14 +537,8 @@ class ESConnection(DocStoreConnection):
         replaces = []
         for r in re.finditer(r" ([a-z_]+_l?tks)( like | ?= ?)'([^']+)'", sql):
             fld, v = r.group(1), r.group(3)
-            match = " MATCH({}, '{}', 'operator=OR;minimum_should_match=30%') ".format(
-                fld, rag_tokenizer.fine_grained_tokenize(rag_tokenizer.tokenize(v)))
-            replaces.append(
-                ("{}{}'{}'".format(
-                    r.group(1),
-                    r.group(2),
-                    r.group(3)),
-                 match))
+            match = " MATCH({}, '{}', 'operator=OR;minimum_should_match=30%') ".format(fld, rag_tokenizer.fine_grained_tokenize(rag_tokenizer.tokenize(v)))
+            replaces.append(("{}{}'{}'".format(r.group(1), r.group(2), r.group(3)), match))
 
         for p, r in replaces:
             sql = sql.replace(p, r, 1)
@@ -567,8 +546,7 @@ class ESConnection(DocStoreConnection):
 
         for i in range(ATTEMPT_TIME):
             try:
-                res = self.es.sql.query(body={"query": sql, "fetch_size": fetch_size}, format=format,
-                                        request_timeout="2s")
+                res = self.es.sql.query(body={"query": sql, "fetch_size": fetch_size}, format=format, request_timeout="2s")
                 return res
             except ConnectionTimeout:
                 logger.exception("ES request timeout")
@@ -588,42 +566,34 @@ class ESConnection(DocStoreConnection):
         raw_stats = self.es.cluster.stats()
         logger.debug(f"ESConnection.get_cluster_stats: {raw_stats}")
         try:
-            res = {
-                'cluster_name': raw_stats['cluster_name'],
-                'status': raw_stats['status']
-            }
-            indices_status = raw_stats['indices']
-            res.update({
-                'indices': indices_status['count'],
-                'indices_shards': indices_status['shards']['total']
-            })
-            doc_info = indices_status['docs']
-            res.update({
-                'docs': doc_info['count'],
-                'docs_deleted': doc_info['deleted']
-            })
-            store_info = indices_status['store']
-            res.update({
-                'store_size': convert_bytes(store_info['size_in_bytes']),
-                'total_dataset_size': convert_bytes(store_info['total_data_set_size_in_bytes'])
-            })
-            mappings_info = indices_status['mappings']
-            res.update({
-                'mappings_fields': mappings_info['total_field_count'],
-                'mappings_deduplicated_fields': mappings_info['total_deduplicated_field_count'],
-                'mappings_deduplicated_size': convert_bytes(mappings_info['total_deduplicated_mapping_size_in_bytes'])
-            })
-            node_info = raw_stats['nodes']
-            res.update({
-                'nodes': node_info['count']['total'],
-                'nodes_version': node_info['versions'],
-                'os_mem': convert_bytes(node_info['os']['mem']['total_in_bytes']),
-                'os_mem_used': convert_bytes(node_info['os']['mem']['used_in_bytes']),
-                'os_mem_used_percent': node_info['os']['mem']['used_percent'],
-                'jvm_versions': node_info['jvm']['versions'][0]['vm_version'],
-                'jvm_heap_used': convert_bytes(node_info['jvm']['mem']['heap_used_in_bytes']),
-                'jvm_heap_max': convert_bytes(node_info['jvm']['mem']['heap_max_in_bytes'])
-            })
+            res = {"cluster_name": raw_stats["cluster_name"], "status": raw_stats["status"]}
+            indices_status = raw_stats["indices"]
+            res.update({"indices": indices_status["count"], "indices_shards": indices_status["shards"]["total"]})
+            doc_info = indices_status["docs"]
+            res.update({"docs": doc_info["count"], "docs_deleted": doc_info["deleted"]})
+            store_info = indices_status["store"]
+            res.update({"store_size": convert_bytes(store_info["size_in_bytes"]), "total_dataset_size": convert_bytes(store_info["total_data_set_size_in_bytes"])})
+            mappings_info = indices_status["mappings"]
+            res.update(
+                {
+                    "mappings_fields": mappings_info["total_field_count"],
+                    "mappings_deduplicated_fields": mappings_info["total_deduplicated_field_count"],
+                    "mappings_deduplicated_size": convert_bytes(mappings_info["total_deduplicated_mapping_size_in_bytes"]),
+                }
+            )
+            node_info = raw_stats["nodes"]
+            res.update(
+                {
+                    "nodes": node_info["count"]["total"],
+                    "nodes_version": node_info["versions"],
+                    "os_mem": convert_bytes(node_info["os"]["mem"]["total_in_bytes"]),
+                    "os_mem_used": convert_bytes(node_info["os"]["mem"]["used_in_bytes"]),
+                    "os_mem_used_percent": node_info["os"]["mem"]["used_percent"],
+                    "jvm_versions": node_info["jvm"]["versions"][0]["vm_version"],
+                    "jvm_heap_used": convert_bytes(node_info["jvm"]["mem"]["heap_used_in_bytes"]),
+                    "jvm_heap_max": convert_bytes(node_info["jvm"]["mem"]["heap_max_in_bytes"]),
+                }
+            )
             return res
 
         except Exception as e:

@@ -122,7 +122,7 @@ Your response must follow one of two formats precisely.
     *Example:*
     `Current Search Query`: Where is Martin Campbell from?
     `Searched Web Pages`: [Long article snippet about Martin Campbell's career, which includes the sentence "Martin Campbell (born 24 October 1943) is a New Zealand film and television director..."]
-    
+
     *Your Output:*
     Final Information
     Martin Campbell is a New Zealand film and television director.

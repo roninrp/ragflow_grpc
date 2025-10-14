@@ -53,8 +53,7 @@ def get_lan_ip():
 
         def get_interface_ip(ifname):
             s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-            return socket.inet_ntoa(
-                fcntl.ioctl(s.fileno(), 0x8915, struct.pack('256s', string_to_bytes(ifname[:15])))[20:24])
+            return socket.inet_ntoa(fcntl.ioctl(s.fileno(), 0x8915, struct.pack("256s", string_to_bytes(ifname[:15])))[20:24])
 
     ip = socket.gethostbyname(socket.getfqdn())
     if ip.startswith("127.") and os.name != "nt":
@@ -76,7 +75,7 @@ def get_lan_ip():
                 break
             except IOError:
                 pass
-    return ip or ''
+    return ip or ""
 
 
 def from_dict_hook(in_dict: dict):
@@ -84,8 +83,7 @@ def from_dict_hook(in_dict: dict):
         if in_dict["module"] is None:
             return in_dict["data"]
         else:
-            return getattr(importlib.import_module(
-                in_dict["module"]), in_dict["type"])(**in_dict["data"])
+            return getattr(importlib.import_module(in_dict["module"]), in_dict["type"])(**in_dict["data"])
     else:
         return in_dict
 
@@ -95,8 +93,7 @@ def get_uuid():
 
 
 def datetime_format(date_time: datetime.datetime) -> datetime.datetime:
-    return datetime.datetime(date_time.year, date_time.month, date_time.day,
-                             date_time.hour, date_time.minute, date_time.second)
+    return datetime.datetime(date_time.year, date_time.month, date_time.day, date_time.hour, date_time.minute, date_time.second)
 
 
 def get_format_time() -> datetime.datetime:
@@ -104,23 +101,21 @@ def get_format_time() -> datetime.datetime:
 
 
 def str2date(date_time: str):
-    return datetime.datetime.strptime(date_time, '%Y-%m-%d')
+    return datetime.datetime.strptime(date_time, "%Y-%m-%d")
 
 
 def elapsed2time(elapsed):
     seconds = elapsed / 1000
     minuter, second = divmod(seconds, 60)
     hour, minuter = divmod(minuter, 60)
-    return '%02d:%02d:%02d' % (hour, minuter, second)
+    return "%02d:%02d:%02d" % (hour, minuter, second)
 
 
 def download_img(url):
     if not url:
         return ""
     response = requests.get(url)
-    return "data:" + \
-        response.headers.get('Content-Type', 'image/jpg') + ";" + \
-        "base64," + base64.b64encode(response.content).decode("utf-8")
+    return "data:" + response.headers.get("Content-Type", "image/jpg") + ";" + "base64," + base64.b64encode(response.content).decode("utf-8")
 
 
 def delta_seconds(date_string: str):
@@ -128,5 +123,5 @@ def delta_seconds(date_string: str):
     return (datetime.datetime.now() - dt).total_seconds()
 
 
-def hash_str2int(line: str, mod: int = 10 ** 8) -> int:
+def hash_str2int(line: str, mod: int = 10**8) -> int:
     return int(hashlib.sha1(line.encode("utf-8")).hexdigest(), 16) % mod

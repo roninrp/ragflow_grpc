@@ -32,6 +32,7 @@ from api.utils.file_utils import get_home_cache_dir
 from api.utils.log_utils import log_exception
 from rag.utils import num_tokens_from_string, truncate, total_token_count_from_response
 
+
 class Base(ABC):
     def __init__(self, key, model_name, **kwargs):
         """
@@ -111,13 +112,13 @@ class DefaultRerank(Base):
                     if "CUDA out of memory" in str(e) and current_batch > self._min_batch_size:
                         current_batch = max(current_batch // 2, self._min_batch_size)
                         self.torch_empty_cache()
-                        i = cur_i # reset i to the start of the current batch
+                        i = cur_i  # reset i to the start of the current batch
                         retry_count += 1
                     else:
                         raise
             if retry_count >= max_retries:
                 raise RuntimeError("max retry times, still cannot process batch, please check your GPU memory")
-            
+
         self.torch_empty_cache()
         self._dynamic_batch_size = old_dynamic_batch_size
         return np.array(res)

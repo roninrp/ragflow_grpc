@@ -35,7 +35,7 @@ def conf_realpath(conf_name):
 
 def read_config(conf_name=SERVICE_CONF):
     local_config = {}
-    local_path = conf_realpath(f'local.{conf_name}')
+    local_path = conf_realpath(f"local.{conf_name}")
 
     # load local config file
     if os.path.exists(local_path):
@@ -109,16 +109,12 @@ def decrypt_database_password(password):
         raise ValueError("No private key")
 
     module_fun = encrypt_module.split("#")
-    pwdecrypt_fun = getattr(
-        importlib.import_module(
-            module_fun[0]),
-        module_fun[1])
+    pwdecrypt_fun = getattr(importlib.import_module(module_fun[0]), module_fun[1])
 
     return pwdecrypt_fun(private_key, password)
 
 
-def decrypt_database_config(
-        database=None, passwd_key="password", name="database"):
+def decrypt_database_config(database=None, passwd_key="password", name="database"):
     if not database:
         database = get_base_config(name, {})
 
@@ -129,8 +125,7 @@ def decrypt_database_config(
 def update_config(key, value, conf_name=SERVICE_CONF):
     conf_path = conf_realpath(conf_name=conf_name)
     if not os.path.isabs(conf_path):
-        conf_path = os.path.join(
-            file_utils.get_project_base_directory(), conf_path)
+        conf_path = os.path.join(file_utils.get_project_base_directory(), conf_path)
 
     with FileLock(os.path.join(os.path.dirname(conf_path), ".lock")):
         config = file_utils.load_yaml_conf(conf_path=conf_path) or {}
@@ -138,21 +133,18 @@ def update_config(key, value, conf_name=SERVICE_CONF):
         file_utils.rewrite_yaml_conf(conf_path=conf_path, config=config)
 
 
-safe_module = {
-    'numpy',
-    'rag_flow'
-}
+safe_module = {"numpy", "rag_flow"}
 
 
 class RestrictedUnpickler(pickle.Unpickler):
     def find_class(self, module, name):
         import importlib
-        if module.split('.')[0] in safe_module:
+
+        if module.split(".")[0] in safe_module:
             _module = importlib.import_module(module)
             return getattr(_module, name)
         # Forbid everything else.
-        raise pickle.UnpicklingError("global '%s.%s' is forbidden" %
-                                     (module, name))
+        raise pickle.UnpicklingError("global '%s.%s' is forbidden" % (module, name))
 
 
 def restricted_loads(src):
@@ -169,11 +161,8 @@ def serialize_b64(src, to_str=False):
 
 
 def deserialize_b64(src):
-    src = base64.b64decode(
-        string_to_bytes(src) if isinstance(
-            src, str) else src)
-    use_deserialize_safe_module = get_base_config(
-        'use_deserialize_safe_module', False)
+    src = base64.b64decode(string_to_bytes(src) if isinstance(src, str) else src)
+    use_deserialize_safe_module = get_base_config("use_deserialize_safe_module", False)
     if use_deserialize_safe_module:
         return restricted_loads(src)
     return pickle.loads(src)

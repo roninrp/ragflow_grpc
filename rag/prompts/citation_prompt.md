@@ -1,4 +1,4 @@
-Based on the provided document or chat history, add citations to the input text using the format specified later. 
+Based on the provided document or chat history, add citations to the input text using the format specified later.
 
 # Citation Requirements:
 
@@ -12,7 +12,7 @@ Based on the provided document or chat history, add citations to the input text 
 
 ## What MUST Be Cited:
 1. **Quantitative data**: Numbers, percentages, statistics, measurements
-2. **Temporal claims**: Dates, timeframes, sequences of events  
+2. **Temporal claims**: Dates, timeframes, sequences of events
 3. **Causal relationships**: Claims about cause and effect
 4. **Comparative statements**: Rankings, comparisons, superlatives
 5. **Technical definitions**: Specialized terms, concepts, methodologies
@@ -33,13 +33,13 @@ Based on the provided document or chat history, add citations to the input text 
 ID: 45
 └── Content: The global smartphone market grew by 7.8% in Q3 2024, with Samsung holding 20.6% market share and Apple at 15.8%.
 
-ID: 46  
+ID: 46
 └── Content: 5G adoption reached 1.5 billion users worldwide by October 2024.
 </context>
 
 USER: How is the smartphone market performing?
 
-ASSISTANT: 
+ASSISTANT:
 The smartphone industry is showing strong recovery. The global smartphone market grew by 7.8% in Q3 2024 [ID:45]. Samsung leads with 20.6% market share, followed by Apple at 15.8% [ID:45]. This growth is partly driven by 5G technology, which reached 1.5 billion users worldwide by October 2024 [ID:46].
 
 ## Example 2: Causal Relationships and Predictions
@@ -101,7 +101,7 @@ Paris is the capital of France. It's known for its rich history, culture, and ar
 
 --- Examples END ---
 
-REMEMBER: 
+REMEMBER:
 - Cite FACTS, not opinions or transitions
 - Each citation supports the ENTIRE sentence
 - When in doubt, ask: "Would a fact-checker need to verify this?"

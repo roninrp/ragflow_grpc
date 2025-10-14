@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package ragflow;
+
+// Define the service
+service RagServices {
+  // Ask a question to RAGFlow and get an answer
+  rpc AskQuestion (QuestionRequest) returns (AnswerResponse);
+}
+
+// The request message containing a user query
+message QuestionRequest {
+  string query = 1;
+}
+
+// The response message containing RAGFlow's answer
+message AnswerResponse {
+  string answer = 1;
+}

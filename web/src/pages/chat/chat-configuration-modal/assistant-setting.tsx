@@ -60,7 +60,7 @@ const AssistantSetting = ({
   const handleTtsChange = useCallback(
     (checked: boolean) => {
       if (checked && !data.tts_id) {
-        message.error(`Please set TTS model firstly. 
+        message.error(`Please set TTS model firstly.
         Setting >> Model providers >> System model settings`);
         form.setFieldValue(['prompt_config', 'tts'], false);
       }

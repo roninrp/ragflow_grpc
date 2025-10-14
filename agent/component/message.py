@@ -30,15 +30,12 @@ class MessageParam(ComponentParamBase):
     """
     Define the Message component parameters.
     """
+
     def __init__(self):
         super().__init__()
         self.content = []
         self.stream = True
-        self.outputs = {
-            "content": {
-                "type": "str"
-            }
-        }
+        self.outputs = {"content": {"type": "str"}}
 
     def check(self):
         self.check_empty(self.content, "[Message] Content")
@@ -49,8 +46,8 @@ class MessageParam(ComponentParamBase):
 class Message(ComponentBase):
     component_name = "Message"
 
-    def get_kwargs(self, script:str, kwargs:dict = {}, delimiter:str=None) -> tuple[str, dict[str, str | list | Any]]:
-        for k,v in self.get_input_elements_from_text(script).items():
+    def get_kwargs(self, script: str, kwargs: dict = {}, delimiter: str = None) -> tuple[str, dict[str, str | list | Any]]:
+        for k, v in self.get_input_elements_from_text(script).items():
             if k in kwargs:
                 continue
             v = v["value"]
@@ -81,13 +78,13 @@ class Message(ComponentBase):
             _kwargs[_n] = v
         return script, _kwargs
 
-    def _stream(self, rand_cnt:str):
+    def _stream(self, rand_cnt: str):
         s = 0
         all_content = ""
         cache = {}
         for r in re.finditer(self.variable_ref_patt, rand_cnt, flags=re.DOTALL):
-            all_content += rand_cnt[s: r.start()]
-            yield rand_cnt[s: r.start()]
+            all_content += rand_cnt[s : r.start()]
+            yield rand_cnt[s : r.start()]
             s = r.end()
             exp = r.group(1)
             if exp in cache:
@@ -116,18 +113,16 @@ class Message(ComponentBase):
             cache[exp] = v
 
         if s < len(rand_cnt):
-            all_content += rand_cnt[s: ]
-            yield rand_cnt[s: ]
+            all_content += rand_cnt[s:]
+            yield rand_cnt[s:]
 
         self.set_output("content", all_content)
 
-    def _is_jinjia2(self, content:str) -> bool:
-        patt = [
-            r"\{%.*%\}", "{{", "}}"
-        ]
+    def _is_jinjia2(self, content: str) -> bool:
+        patt = [r"\{%.*%\}", "{{", "}}"]
         return any([re.search(p, content) for p in patt])
 
-    @timeout(int(os.environ.get("COMPONENT_EXEC_TIMEOUT", 10*60)))
+    @timeout(int(os.environ.get("COMPONENT_EXEC_TIMEOUT", 10 * 60)))
     def _invoke(self, **kwargs):
         rand_cnt = random.choice(self._param.content)
         if self._param.stream and not self._is_jinjia2(rand_cnt):

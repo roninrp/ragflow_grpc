@@ -35,22 +35,14 @@ def login_verify(f):
     @wraps(f)
     def decorated(*args, **kwargs):
         auth = request.authorization
-        if not auth or 'username' not in auth.parameters or 'password' not in auth.parameters:
-            return jsonify({
-                "code": 401,
-                "message": "Authentication required",
-                "data": None
-            }), 200
+        if not auth or "username" not in auth.parameters or "password" not in auth.parameters:
+            return jsonify({"code": 401, "message": "Authentication required", "data": None}), 200
 
-        username = auth.parameters['username']
-        password = auth.parameters['password']
+        username = auth.parameters["username"]
+        password = auth.parameters["password"]
         # TODO: to check the username and password from DB
         if check_admin(username, password) is False:
-            return jsonify({
-                "code": 403,
-                "message": "Access denied",
-                "data": None
-            }), 200
+            return jsonify({"code": 403, "message": "Access denied", "data": None}), 200
 
         return f(*args, **kwargs)
 

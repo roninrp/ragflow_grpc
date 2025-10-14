@@ -28,8 +28,7 @@ from api.db.services.llm_service import LLMBundle
 from api.db.services.tenant_llm_service import TenantLLMService
 from api.db.services.mcp_server_service import MCPServerService
 from api.utils.api_utils import timeout
-from rag.prompts.generator import next_step, COMPLETE_TASK, analyze_task, \
-    citation_prompt, reflect, rank_memories, kb_prompt, citation_plus, full_question, message_fit_in
+from rag.prompts.generator import next_step, COMPLETE_TASK, analyze_task, citation_prompt, reflect, rank_memories, kb_prompt, citation_plus, full_question, message_fit_in
 from rag.utils.mcp_tool_call_conn import MCPToolCallSession, mcp_tool_metadata_to_openai_tool
 from agent.component.llm import LLMParam, LLM
 
@@ -40,35 +39,25 @@ class AgentParam(LLMParam, ToolParamBase):
     """
 
     def __init__(self):
-        self.meta:ToolMeta = {
-                "name": "agent",
-                "description": "This is an agent for a specific task.",
-                "parameters": {
-                    "user_prompt": {
-                        "type": "string",
-                        "description": "This is the order you need to send to the agent.",
-                        "default": "",
-                        "required": True
-                    },
-                    "reasoning": {
-                        "type": "string",
-                        "description": (
-                            "Supervisor's reasoning for choosing the this agent. "
-                            "Explain why this agent is being invoked and what is expected of it."
-                        ),
-                        "required": True
-                    },
-                    "context": {
-                        "type": "string",
-                        "description": (
-                                "All relevant background information, prior facts, decisions, "
-                                "and state needed by the agent to solve the current query. "
-                                "Should be as detailed and self-contained as possible."
-                            ),
-                        "required": True
-                    },
-                }
-            }
+        self.meta: ToolMeta = {
+            "name": "agent",
+            "description": "This is an agent for a specific task.",
+            "parameters": {
+                "user_prompt": {"type": "string", "description": "This is the order you need to send to the agent.", "default": "", "required": True},
+                "reasoning": {
+                    "type": "string",
+                    "description": ("Supervisor's reasoning for choosing the this agent. Explain why this agent is being invoked and what is expected of it."),
+                    "required": True,
+                },
+                "context": {
+                    "type": "string",
+                    "description": (
+                        "All relevant background information, prior facts, decisions, and state needed by the agent to solve the current query. Should be as detailed and self-contained as possible."
+                    ),
+                    "required": True,
+                },
+            },
+        }
         super().__init__()
         self.function_name = "agent"
         self.tools = []
@@ -87,13 +76,16 @@ class Agent(LLM, ToolBase):
             cpn = self._load_tool_obj(cpn)
             self.tools[cpn.get_meta()["function"]["name"]] = cpn
 
-        self.chat_mdl = LLMBundle(self._canvas.get_tenant_id(), TenantLLMService.llm_id2llm_type(self._param.llm_id), self._param.llm_id,
-                                  max_retries=self._param.max_retries,
-                                  retry_interval=self._param.delay_after_error,
-                                  max_rounds=self._param.max_rounds,
-                                  verbose_tool_use=True
-                                  )
-        self.tool_meta = [v.get_meta() for _,v in self.tools.items()]
+        self.chat_mdl = LLMBundle(
+            self._canvas.get_tenant_id(),
+            TenantLLMService.llm_id2llm_type(self._param.llm_id),
+            self._param.llm_id,
+            max_retries=self._param.max_retries,
+            retry_interval=self._param.delay_after_error,
+            max_rounds=self._param.max_rounds,
+            verbose_tool_use=True,
+        )
+        self.tool_meta = [v.get_meta() for _, v in self.tools.items()]
 
         for mcp in self._param.mcp:
             _, mcp_server = MCPServerService.get_by_id(mcp["mcp_id"])
@@ -103,10 +95,11 @@ class Agent(LLM, ToolBase):
                 self.tools[tnm] = tool_call_session
         self.callback = partial(self._canvas.tool_use_callback, id)
         self.toolcall_session = LLMToolPluginCallSession(self.tools, self.callback)
-        #self.chat_mdl.bind_tools(self.toolcall_session, self.tool_metas)
+        # self.chat_mdl.bind_tools(self.toolcall_session, self.tool_metas)
 
     def _load_tool_obj(self, cpn: dict) -> object:
         from agent.component import component_class
+
         param = component_class(cpn["component_name"] + "Param")()
         param.update(cpn["params"])
         try:
@@ -118,7 +111,7 @@ class Agent(LLM, ToolBase):
         return component_class(cpn["component_name"])(self._canvas, cpn_id, param)
 
     def get_meta(self) -> dict[str, Any]:
-        self._param.function_name= self._id.split("-->")[-1]
+        self._param.function_name = self._id.split("-->")[-1]
         m = super().get_meta()
         if hasattr(self._param, "user_prompt") and self._param.user_prompt:
             m["function"]["parameters"]["properties"]["user_prompt"] = self._param.user_prompt
@@ -127,17 +120,14 @@ class Agent(LLM, ToolBase):
     def get_input_form(self) -> dict[str, dict]:
         res = {}
         for k, v in self.get_input_elements().items():
-            res[k] = {
-                "type": "line",
-                "name": v["name"]
-            }
+            res[k] = {"type": "line", "name": v["name"]}
         for cpn in self._param.tools:
             if not isinstance(cpn, LLM):
                 continue
             res.update(cpn.get_input_form())
         return res
 
-    @timeout(int(os.environ.get("COMPONENT_EXEC_TIMEOUT", 20*60)))
+    @timeout(int(os.environ.get("COMPONENT_EXEC_TIMEOUT", 20 * 60)))
     def _invoke(self, **kwargs):
         if kwargs.get("user_prompt"):
             usr_pmt = ""
@@ -158,7 +148,7 @@ class Agent(LLM, ToolBase):
 
         downstreams = self._canvas.get_component(self._id)["downstream"] if self._canvas.get_component(self._id) else []
         ex = self.exception_handler()
-        if any([self._canvas.get_component_obj(cid).component_name.lower()=="message" for cid in downstreams]) and not self._param.output_structure and not (ex and ex["goto"]):
+        if any([self._canvas.get_component_obj(cid).component_name.lower() == "message" for cid in downstreams]) and not self._param.output_structure and not (ex and ex["goto"]):
             self.set_output("content", partial(self.stream_output_with_tools, prompt, msg, user_defined_prompt))
             return
 
@@ -185,7 +175,7 @@ class Agent(LLM, ToolBase):
         _, msg = message_fit_in([{"role": "system", "content": prompt}, *msg], int(self.chat_mdl.max_length * 0.97))
         answer_without_toolcall = ""
         use_tools = []
-        for delta_ans,_ in self._react_with_tools_streamly(prompt, msg, use_tools, user_defined_prompt):
+        for delta_ans, _ in self._react_with_tools_streamly(prompt, msg, use_tools, user_defined_prompt):
             if delta_ans.find("**ERROR**") >= 0:
                 if self.get_exception_default_value():
                     self.set_output("content", self.get_exception_default_value())
@@ -203,9 +193,7 @@ class Agent(LLM, ToolBase):
         retrievals = self._canvas.get_reference()
         retrievals = {"chunks": list(retrievals["chunks"].values()), "doc_aggs": list(retrievals["doc_aggs"].values())}
         formated_refer = kb_prompt(retrievals, self.chat_mdl.max_length, True)
-        for delta_ans in self._generate_streamly([{"role": "system", "content": citation_plus("\n\n".join(formated_refer))},
-                                                  {"role": "user", "content": text}
-                                                  ]):
+        for delta_ans in self._generate_streamly([{"role": "system", "content": citation_plus("\n\n".join(formated_refer))}, {"role": "user", "content": text}]):
             yield delta_ans
 
     def _react_with_tools_streamly(self, prompt, history: list[dict], use_tools, user_defined_prompt={}):
@@ -216,29 +204,25 @@ class Agent(LLM, ToolBase):
         if len(hist) > 3:
             st = timer()
             user_request = full_question(messages=history, chat_mdl=self.chat_mdl)
-            self.callback("Multi-turn conversation optimization", {}, user_request, elapsed_time=timer()-st)
+            self.callback("Multi-turn conversation optimization", {}, user_request, elapsed_time=timer() - st)
         else:
             user_request = history[-1]["content"]
 
         def use_tool(name, args):
-            nonlocal hist, use_tools, token_count,last_calling,user_request
+            nonlocal hist, use_tools, token_count, last_calling, user_request
             logging.info(f"{last_calling=} == {name=}")
             # Summarize of function calling
-            #if all([
+            # if all([
             #    isinstance(self.toolcall_session.get_tool_obj(name), Agent),
             #    last_calling,
             #    last_calling != name
-            #]):
+            # ]):
             #    self.toolcall_session.get_tool_obj(name).add2system_prompt(f"The chat history with other agents are as following: \n" + self.get_useful_memory(user_request, str(args["user_prompt"]),user_defined_prompt))
             last_calling = name
             tool_response = self.toolcall_session.tool_call(name, args)
-            use_tools.append({
-                "name": name,
-                "arguments": args,
-                "results": tool_response
-            })
+            use_tools.append({"name": name, "arguments": args, "results": tool_response})
             # self.callback("add_memory", {}, "...")
-            #self.add_memory(hist[-2]["content"], hist[-1]["content"], name, args, str(tool_response), user_defined_prompt)
+            # self.add_memory(hist[-2]["content"], hist[-1]["content"], name, args, str(tool_response), user_defined_prompt)
 
             return name, tool_response
 
@@ -269,7 +253,7 @@ class Agent(LLM, ToolBase):
                 yield delta_ans, 0
                 txt += delta_ans
 
-            self.callback("gen_citations", {}, txt, elapsed_time=timer()-st)
+            self.callback("gen_citations", {}, txt, elapsed_time=timer() - st)
 
         def append_user_content(hist, content):
             if hist[-1]["role"] == "user":
@@ -279,7 +263,7 @@ class Agent(LLM, ToolBase):
 
         st = timer()
         task_desc = analyze_task(self.chat_mdl, prompt, user_request, tool_metas, user_defined_prompt)
-        self.callback("analyze_task", {}, task_desc, elapsed_time=timer()-st)
+        self.callback("analyze_task", {}, task_desc, elapsed_time=timer() - st)
         for _ in range(self._param.max_rounds + 1):
             response, tk = next_step(self.chat_mdl, hist, tool_metas, task_desc, user_defined_prompt)
             # self.callback("next_step", {}, str(response)[:256]+"...")
@@ -298,7 +282,9 @@ class Agent(LLM, ToolBase):
                         name = func["name"]
                         args = func["arguments"]
                         if name == COMPLETE_TASK:
-                            append_user_content(hist, f"Respond with a formal answer. FORGET(DO NOT mention) about `{COMPLETE_TASK}`. The language for the response MUST be as the same as the first user request.\n")
+                            append_user_content(
+                                hist, f"Respond with a formal answer. FORGET(DO NOT mention) about `{COMPLETE_TASK}`. The language for the response MUST be as the same as the first user request.\n"
+                            )
                             for txt, tkcnt in complete():
                                 yield txt, tkcnt
                             return
@@ -308,14 +294,14 @@ class Agent(LLM, ToolBase):
                     st = timer()
                     reflection = reflect(self.chat_mdl, hist, [th.result() for th in thr], user_defined_prompt)
                     append_user_content(hist, reflection)
-                    self.callback("reflection", {}, str(reflection), elapsed_time=timer()-st)
+                    self.callback("reflection", {}, str(reflection), elapsed_time=timer() - st)
 
             except Exception as e:
                 logging.exception(msg=f"Wrong JSON argument format in LLM ReAct response: {e}")
                 e = f"\nTool call error, please correct the input parameter of response format and call it again.\n *** Exception ***\n{e}"
                 append_user_content(hist, str(e))
 
-        logging.warning( f"Exceed max rounds: {self._param.max_rounds}")
+        logging.warning(f"Exceed max rounds: {self._param.max_rounds}")
         final_instruction = f"""
 {user_request}
 IMPORTANT: You have reached the conversation limit. Based on ALL the information and research you have gathered so far, please provide a DIRECT and COMPREHENSIVE final answer to the original request.
@@ -333,14 +319,14 @@ Respond immediately with your final comprehensive answer.
         for txt, tkcnt in complete():
             yield txt, tkcnt
 
-    def get_useful_memory(self, goal: str, sub_goal:str, topn=3, user_defined_prompt:dict={}) -> str:
+    def get_useful_memory(self, goal: str, sub_goal: str, topn=3, user_defined_prompt: dict = {}) -> str:
         # self.callback("get_useful_memory", {"topn": 3}, "...")
         mems = self._canvas.get_memory()
         rank = rank_memories(self.chat_mdl, goal, sub_goal, [summ for (user, assist, summ) in mems], user_defined_prompt)
         try:
             rank = json_repair.loads(re.sub(r"```.*", "", rank))[:topn]
             mems = [mems[r] for r in rank]
-            return "\n\n".join([f"User: {u}\nAgent: {a}" for u, a,_ in mems])
+            return "\n\n".join([f"User: {u}\nAgent: {a}" for u, a, _ in mems])
         except Exception as e:
             logging.exception(e)
 
@@ -349,4 +335,3 @@ Respond immediately with your final comprehensive answer.
     def reset(self):
         for k, cpn in self.tools.items():
             cpn.reset()
-

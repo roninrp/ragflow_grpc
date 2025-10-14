@@ -40,6 +40,7 @@ class KnowledgebaseService(CommonService):
     Attributes:
         model: The Knowledgebase model class for database operations.
     """
+
     model = Knowledgebase
 
     @classmethod
@@ -69,8 +70,7 @@ class KnowledgebaseService(CommonService):
                 2. The user is not the creator of the knowledge base
         """
         # Check if a knowledge base can be deleted by a user
-        docs = cls.model.select(
-            cls.model.id).where(cls.model.id == kb_id, cls.model.created_by == user_id).paginate(0, 1)
+        docs = cls.model.select(cls.model.id).where(cls.model.id == kb_id, cls.model.created_by == user_id).paginate(0, 1)
         docs = docs.dicts()
         if not docs:
             return False
@@ -102,10 +102,10 @@ class KnowledgebaseService(CommonService):
         # Check parsing status of each document
         for doc in docs:
             # If document is being parsed, don't allow chat creation
-            if doc['run'] == TaskStatus.RUNNING.value or doc['run'] == TaskStatus.CANCEL.value or doc['run'] == TaskStatus.FAIL.value:
+            if doc["run"] == TaskStatus.RUNNING.value or doc["run"] == TaskStatus.CANCEL.value or doc["run"] == TaskStatus.FAIL.value:
                 return False, f"Document '{doc['name']}' in dataset '{kb.name}' is still being parsed. Please wait until all documents are parsed before starting a chat."
             # If document is not yet parsed and has no chunks, don't allow chat creation
-            if doc['run'] == TaskStatus.UNSTART.value and doc['chunk_num'] == 0:
+            if doc["run"] == TaskStatus.UNSTART.value and doc["chunk_num"] == 0:
                 return False, f"Document '{doc['name']}' in dataset '{kb.name}' has not been parsed yet. Please parse all documents before starting a chat."
 
         return True, None
@@ -118,20 +118,14 @@ class KnowledgebaseService(CommonService):
         #     kb_ids: List of knowledge base IDs
         # Returns:
         #     List of document IDs
-        doc_ids = cls.model.select(Document.id.alias("document_id")).join(Document, on=(cls.model.id == Document.kb_id)).where(
-            cls.model.id.in_(kb_ids)
-        )
+        doc_ids = cls.model.select(Document.id.alias("document_id")).join(Document, on=(cls.model.id == Document.kb_id)).where(cls.model.id.in_(kb_ids))
         doc_ids = list(doc_ids.dicts())
         doc_ids = [doc["document_id"] for doc in doc_ids]
         return doc_ids
 
     @classmethod
     @DB.connection_context()
-    def get_by_tenant_ids(cls, joined_tenant_ids, user_id,
-                          page_number, items_per_page,
-                          orderby, desc, keywords,
-                          parser_id=None
-                          ):
+    def get_by_tenant_ids(cls, joined_tenant_ids, user_id, page_number, items_per_page, orderby, desc, keywords, parser_id=None):
         # Get knowledge bases by tenant IDs with pagination and filtering
         # Args:
         #     joined_tenant_ids: List of tenant IDs
@@ -158,23 +152,27 @@ class KnowledgebaseService(CommonService):
             cls.model.parser_id,
             cls.model.embd_id,
             User.nickname,
-            User.avatar.alias('tenant_avatar'),
-            cls.model.update_time
+            User.avatar.alias("tenant_avatar"),
+            cls.model.update_time,
         ]
         if keywords:
-            kbs = cls.model.select(*fields).join(User, on=(cls.model.tenant_id == User.id)).where(
-                ((cls.model.tenant_id.in_(joined_tenant_ids) & (cls.model.permission ==
-                                                                TenantPermission.TEAM.value)) | (
-                    cls.model.tenant_id == user_id))
-                & (cls.model.status == StatusEnum.VALID.value),
-                (fn.LOWER(cls.model.name).contains(keywords.lower()))
+            kbs = (
+                cls.model.select(*fields)
+                .join(User, on=(cls.model.tenant_id == User.id))
+                .where(
+                    ((cls.model.tenant_id.in_(joined_tenant_ids) & (cls.model.permission == TenantPermission.TEAM.value)) | (cls.model.tenant_id == user_id))
+                    & (cls.model.status == StatusEnum.VALID.value),
+                    (fn.LOWER(cls.model.name).contains(keywords.lower())),
+                )
             )
         else:
-            kbs = cls.model.select(*fields).join(User, on=(cls.model.tenant_id == User.id)).where(
-                ((cls.model.tenant_id.in_(joined_tenant_ids) & (cls.model.permission ==
-                                                                TenantPermission.TEAM.value)) | (
-                    cls.model.tenant_id == user_id))
-                & (cls.model.status == StatusEnum.VALID.value)
+            kbs = (
+                cls.model.select(*fields)
+                .join(User, on=(cls.model.tenant_id == User.id))
+                .where(
+                    ((cls.model.tenant_id.in_(joined_tenant_ids) & (cls.model.permission == TenantPermission.TEAM.value)) | (cls.model.tenant_id == user_id))
+                    & (cls.model.status == StatusEnum.VALID.value)
+                )
             )
         if parser_id:
             kbs = kbs.where(cls.model.parser_id == parser_id)
@@ -194,23 +192,9 @@ class KnowledgebaseService(CommonService):
     @DB.connection_context()
     def get_all_kb_by_tenant_ids(cls, tenant_ids, user_id):
         # will get all permitted kb, be cautious.
-        fields = [
-            cls.model.name,
-            cls.model.language,
-            cls.model.permission,
-            cls.model.doc_num,
-            cls.model.token_num,
-            cls.model.chunk_num,
-            cls.model.status,
-            cls.model.create_date,
-            cls.model.update_date
-        ]
+        fields = [cls.model.name, cls.model.language, cls.model.permission, cls.model.doc_num, cls.model.token_num, cls.model.chunk_num, cls.model.status, cls.model.create_date, cls.model.update_date]
         # find team kb and owned kb
-        kbs = cls.model.select(*fields).where(
-            (cls.model.tenant_id.in_(tenant_ids) & (cls.model.permission ==TenantPermission.TEAM.value)) | (
-                cls.model.tenant_id == user_id
-            )
-        )
+        kbs = cls.model.select(*fields).where((cls.model.tenant_id.in_(tenant_ids) & (cls.model.permission == TenantPermission.TEAM.value)) | (cls.model.tenant_id == user_id))
         # sort by create_time asc
         kbs.order_by(cls.model.create_time.asc())
         # maybe cause slow query by deep paginate, optimize later.
@@ -263,12 +247,12 @@ class KnowledgebaseService(CommonService):
             cls.model.parser_config,
             cls.model.pagerank,
             cls.model.create_time,
-            cls.model.update_time
-            ]
-        kbs = cls.model.select(*fields).join(Tenant, on=(
-            (Tenant.id == cls.model.tenant_id) & (Tenant.status == StatusEnum.VALID.value))).where(
-            (cls.model.id == kb_id),
-            (cls.model.status == StatusEnum.VALID.value)
+            cls.model.update_time,
+        ]
+        kbs = (
+            cls.model.select(*fields)
+            .join(Tenant, on=((Tenant.id == cls.model.tenant_id) & (Tenant.status == StatusEnum.VALID.value)))
+            .where((cls.model.id == kb_id), (cls.model.status == StatusEnum.VALID.value))
         )
         if not kbs:
             return
@@ -337,11 +321,7 @@ class KnowledgebaseService(CommonService):
         #     tenant_id: Tenant ID
         # Returns:
         #     Tuple of (exists, knowledge_base)
-        kb = cls.model.select().where(
-            (cls.model.name == kb_name)
-            & (cls.model.tenant_id == tenant_id)
-            & (cls.model.status == StatusEnum.VALID.value)
-        )
+        kb = cls.model.select().where((cls.model.name == kb_name) & (cls.model.tenant_id == tenant_id) & (cls.model.status == StatusEnum.VALID.value))
         if kb:
             return True, kb[0]
         return False, None
@@ -356,8 +336,7 @@ class KnowledgebaseService(CommonService):
 
     @classmethod
     @DB.connection_context()
-    def get_list(cls, joined_tenant_ids, user_id,
-                 page_number, items_per_page, orderby, desc, id, name):
+    def get_list(cls, joined_tenant_ids, user_id, page_number, items_per_page, orderby, desc, id, name):
         # Get list of knowledge bases with filtering and pagination
         # Args:
         #     joined_tenant_ids: List of tenant IDs
@@ -376,10 +355,7 @@ class KnowledgebaseService(CommonService):
         if name:
             kbs = kbs.where(cls.model.name == name)
         kbs = kbs.where(
-            ((cls.model.tenant_id.in_(joined_tenant_ids) & (cls.model.permission ==
-                                                            TenantPermission.TEAM.value)) | (
-                cls.model.tenant_id == user_id))
-            & (cls.model.status == StatusEnum.VALID.value)
+            ((cls.model.tenant_id.in_(joined_tenant_ids) & (cls.model.permission == TenantPermission.TEAM.value)) | (cls.model.tenant_id == user_id)) & (cls.model.status == StatusEnum.VALID.value)
         )
         if desc:
             kbs = kbs.order_by(cls.model.getter_by(orderby).desc())
@@ -399,9 +375,7 @@ class KnowledgebaseService(CommonService):
         #     user_id: User ID
         # Returns:
         #     Boolean indicating accessibility
-        docs = cls.model.select(
-            cls.model.id).join(UserTenant, on=(UserTenant.tenant_id == Knowledgebase.tenant_id)
-                               ).where(cls.model.id == kb_id, UserTenant.user_id == user_id).paginate(0, 1)
+        docs = cls.model.select(cls.model.id).join(UserTenant, on=(UserTenant.tenant_id == Knowledgebase.tenant_id)).where(cls.model.id == kb_id, UserTenant.user_id == user_id).paginate(0, 1)
         docs = docs.dicts()
         if not docs:
             return False
@@ -416,8 +390,7 @@ class KnowledgebaseService(CommonService):
         #     user_id: User ID
         # Returns:
         #     List containing knowledge base information
-        kbs = cls.model.select().join(UserTenant, on=(UserTenant.tenant_id == Knowledgebase.tenant_id)
-                                      ).where(cls.model.id == kb_id, UserTenant.user_id == user_id).paginate(0, 1)
+        kbs = cls.model.select().join(UserTenant, on=(UserTenant.tenant_id == Knowledgebase.tenant_id)).where(cls.model.id == kb_id, UserTenant.user_id == user_id).paginate(0, 1)
         kbs = kbs.dicts()
         return list(kbs)
 
@@ -430,8 +403,7 @@ class KnowledgebaseService(CommonService):
         #     user_id: User ID
         # Returns:
         #     List containing knowledge base information
-        kbs = cls.model.select().join(UserTenant, on=(UserTenant.tenant_id == Knowledgebase.tenant_id)
-                                      ).where(cls.model.name == kb_name, UserTenant.user_id == user_id).paginate(0, 1)
+        kbs = cls.model.select().join(UserTenant, on=(UserTenant.tenant_id == Knowledgebase.tenant_id)).where(cls.model.name == kb_name, UserTenant.user_id == user_id).paginate(0, 1)
         kbs = kbs.dicts()
         return list(kbs)
 
@@ -467,7 +439,7 @@ class KnowledgebaseService(CommonService):
             kb.save(only=dirty_fields)
         except ValueError as e:
             if str(e) == "no data to save!":
-                pass # that's OK
+                pass  # that's OK
             else:
                 raise e
 
@@ -478,10 +450,10 @@ class KnowledgebaseService(CommonService):
         if not kb_row:
             raise RuntimeError(f"kb_id {kb_id} does not exist")
         update_dict = {
-            'doc_num': kb_row.doc_num - doc_num_info['doc_num'],
-            'chunk_num': kb_row.chunk_num - doc_num_info['chunk_num'],
-            'token_num': kb_row.token_num - doc_num_info['token_num'],
-            'update_time': current_timestamp(),
-            'update_date': datetime_format(datetime.now())
+            "doc_num": kb_row.doc_num - doc_num_info["doc_num"],
+            "chunk_num": kb_row.chunk_num - doc_num_info["chunk_num"],
+            "token_num": kb_row.token_num - doc_num_info["token_num"],
+            "update_time": current_timestamp(),
+            "update_date": datetime_format(datetime.now()),
         }
         return cls.model.update(update_dict).where(cls.model.id == kb_id).execute()

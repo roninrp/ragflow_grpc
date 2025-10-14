@@ -1,7 +1,7 @@
 {
     "id": 21,
     "title": {
-        "en": "Report Agent Using Knowledge Base", 
+        "en": "Report Agent Using Knowledge Base",
         "zh": "知识库检索智能体"},
     "description": {
         "en": "A report generation assistant using local knowledge base, with advanced capabilities in task planning, reasoning, and reflective analysis. Recommended for academic research paper Q&A",

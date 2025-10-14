@@ -83,7 +83,7 @@ Ecommerce Customer Service Workflow: A template designed to handle enquiries abo
 
 ### Fixed issues
 
-- Dataset:  
+- Dataset:
   - Unable to share resources with the team.
   - Inappropriate restrictions on the number and size of uploaded files.
 - Chat:
@@ -99,13 +99,13 @@ Released on August 20, 2025.
 
 ### Improvements
 
-- Revamps the user interface for the **Datasets**, **Chat**, and **Search** pages.  
+- Revamps the user interface for the **Datasets**, **Chat**, and **Search** pages.
 - Search and Chat: Introduces document-level metadata filtering, allowing automatic or manual filtering during chats or searches.
 - Search: Supports creating search apps tailored to various business scenarios
 - Chat: Supports comparing answer performance of up to three chat model settings on a single **Chat** page.
-- Agent:  
-  - Implements a toggle in the **Agent** component to enable or disable citation.  
-  - Introduces a drag-and-drop method for creating components.  
+- Agent:
+  - Implements a toggle in the **Agent** component to enable or disable citation.
+  - Introduces a drag-and-drop method for creating components.
 - Documentation: Corrects inaccuracies in the API reference.
 
 ### New Agent templates
@@ -115,8 +115,8 @@ Released on August 20, 2025.
 ### Fixed issues
 
 - The timeout mechanism introduced in v0.20.0 caused tasks like GraphRAG to halt.
-- Predefined opening greeting in the **Agent** component was missing during conversations.  
-- An automatic line break issue in the prompt editor.  
+- Predefined opening greeting in the **Agent** component was missing during conversations.
+- An automatic line break issue in the prompt editor.
 - A memory leak issue caused by PyPDF. [#9469](https://github.com/infiniflow/ragflow/pull/9469)
 
 ### API changes
@@ -200,7 +200,7 @@ Released on June 23, 2025.
 
 ### Added models
 
-- Qwen 3 Embedding. [#8184](https://github.com/infiniflow/ragflow/pull/8184) 
+- Qwen 3 Embedding. [#8184](https://github.com/infiniflow/ragflow/pull/8184)
 - Voyage Multimodal 3. [#7987](https://github.com/infiniflow/ragflow/pull/7987)
 
 ## v0.19.0

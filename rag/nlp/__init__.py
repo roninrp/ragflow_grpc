@@ -30,30 +30,119 @@ from PIL import Image
 import chardet
 
 all_codecs = [
-    'utf-8', 'gb2312', 'gbk', 'utf_16', 'ascii', 'big5', 'big5hkscs',
-    'cp037', 'cp273', 'cp424', 'cp437',
-    'cp500', 'cp720', 'cp737', 'cp775', 'cp850', 'cp852', 'cp855', 'cp856', 'cp857',
-    'cp858', 'cp860', 'cp861', 'cp862', 'cp863', 'cp864', 'cp865', 'cp866', 'cp869',
-    'cp874', 'cp875', 'cp932', 'cp949', 'cp950', 'cp1006', 'cp1026', 'cp1125',
-    'cp1140', 'cp1250', 'cp1251', 'cp1252', 'cp1253', 'cp1254', 'cp1255', 'cp1256',
-    'cp1257', 'cp1258', 'euc_jp', 'euc_jis_2004', 'euc_jisx0213', 'euc_kr',
-    'gb18030', 'hz', 'iso2022_jp', 'iso2022_jp_1', 'iso2022_jp_2',
-    'iso2022_jp_2004', 'iso2022_jp_3', 'iso2022_jp_ext', 'iso2022_kr', 'latin_1',
-    'iso8859_2', 'iso8859_3', 'iso8859_4', 'iso8859_5', 'iso8859_6', 'iso8859_7',
-    'iso8859_8', 'iso8859_9', 'iso8859_10', 'iso8859_11', 'iso8859_13',
-    'iso8859_14', 'iso8859_15', 'iso8859_16', 'johab', 'koi8_r', 'koi8_t', 'koi8_u',
-    'kz1048', 'mac_cyrillic', 'mac_greek', 'mac_iceland', 'mac_latin2', 'mac_roman',
-    'mac_turkish', 'ptcp154', 'shift_jis', 'shift_jis_2004', 'shift_jisx0213',
-    'utf_32', 'utf_32_be', 'utf_32_le', 'utf_16_be', 'utf_16_le', 'utf_7', 'windows-1250', 'windows-1251',
-    'windows-1252', 'windows-1253', 'windows-1254', 'windows-1255', 'windows-1256',
-    'windows-1257', 'windows-1258', 'latin-2'
+    "utf-8",
+    "gb2312",
+    "gbk",
+    "utf_16",
+    "ascii",
+    "big5",
+    "big5hkscs",
+    "cp037",
+    "cp273",
+    "cp424",
+    "cp437",
+    "cp500",
+    "cp720",
+    "cp737",
+    "cp775",
+    "cp850",
+    "cp852",
+    "cp855",
+    "cp856",
+    "cp857",
+    "cp858",
+    "cp860",
+    "cp861",
+    "cp862",
+    "cp863",
+    "cp864",
+    "cp865",
+    "cp866",
+    "cp869",
+    "cp874",
+    "cp875",
+    "cp932",
+    "cp949",
+    "cp950",
+    "cp1006",
+    "cp1026",
+    "cp1125",
+    "cp1140",
+    "cp1250",
+    "cp1251",
+    "cp1252",
+    "cp1253",
+    "cp1254",
+    "cp1255",
+    "cp1256",
+    "cp1257",
+    "cp1258",
+    "euc_jp",
+    "euc_jis_2004",
+    "euc_jisx0213",
+    "euc_kr",
+    "gb18030",
+    "hz",
+    "iso2022_jp",
+    "iso2022_jp_1",
+    "iso2022_jp_2",
+    "iso2022_jp_2004",
+    "iso2022_jp_3",
+    "iso2022_jp_ext",
+    "iso2022_kr",
+    "latin_1",
+    "iso8859_2",
+    "iso8859_3",
+    "iso8859_4",
+    "iso8859_5",
+    "iso8859_6",
+    "iso8859_7",
+    "iso8859_8",
+    "iso8859_9",
+    "iso8859_10",
+    "iso8859_11",
+    "iso8859_13",
+    "iso8859_14",
+    "iso8859_15",
+    "iso8859_16",
+    "johab",
+    "koi8_r",
+    "koi8_t",
+    "koi8_u",
+    "kz1048",
+    "mac_cyrillic",
+    "mac_greek",
+    "mac_iceland",
+    "mac_latin2",
+    "mac_roman",
+    "mac_turkish",
+    "ptcp154",
+    "shift_jis",
+    "shift_jis_2004",
+    "shift_jisx0213",
+    "utf_32",
+    "utf_32_be",
+    "utf_32_le",
+    "utf_16_be",
+    "utf_16_le",
+    "utf_7",
+    "windows-1250",
+    "windows-1251",
+    "windows-1252",
+    "windows-1253",
+    "windows-1254",
+    "windows-1255",
+    "windows-1256",
+    "windows-1257",
+    "windows-1258",
+    "latin-2",
 ]
 
 
 def find_codec(blob):
     detected = chardet.detect(blob[:1024])
-    if detected['confidence'] > 0.5:
-        if detected['encoding'] == "ascii":
+    if detected["confidence"] > 0.5:
+        if detected["encoding"] == "ascii":
             return "utf-8"
 
     for c in all_codecs:
@@ -87,44 +176,44 @@ QUESTION_PATTERN = [
 
 
 def has_qbullet(reg, box, last_box, last_index, last_bull, bull_x0_list):
-    section, last_section = box['text'], last_box['text']
-    q_reg = r'(\w|\W)*?(?:？|\?|\n|$)+'
+    section, last_section = box["text"], last_box["text"]
+    q_reg = r"(\w|\W)*?(?:？|\?|\n|$)+"
     full_reg = reg + q_reg
     has_bull = re.match(full_reg, section)
     index_str = None
     if has_bull:
-        if 'x0' not in last_box:
-            last_box['x0'] = box['x0']
-        if 'top' not in last_box:
-            last_box['top'] = box['top']
-        if last_bull and box['x0'] - last_box['x0'] > 10:
+        if "x0" not in last_box:
+            last_box["x0"] = box["x0"]
+        if "top" not in last_box:
+            last_box["top"] = box["top"]
+        if last_bull and box["x0"] - last_box["x0"] > 10:
             return None, last_index
-        if not last_bull and box['x0'] >= last_box['x0'] and box['top'] - last_box['top'] < 20:
+        if not last_bull and box["x0"] >= last_box["x0"] and box["top"] - last_box["top"] < 20:
             return None, last_index
         avg_bull_x0 = 0
         if bull_x0_list:
             avg_bull_x0 = sum(bull_x0_list) / len(bull_x0_list)
         else:
-            avg_bull_x0 = box['x0']
-        if box['x0'] - avg_bull_x0 > 10:
+            avg_bull_x0 = box["x0"]
+        if box["x0"] - avg_bull_x0 > 10:
             return None, last_index
         index_str = has_bull.group(1)
         index = index_int(index_str)
-        if last_section[-1] == ':' or last_section[-1] == '：':
+        if last_section[-1] == ":" or last_section[-1] == "：":
             return None, last_index
         if not last_index or index >= last_index:
-            bull_x0_list.append(box['x0'])
+            bull_x0_list.append(box["x0"])
             return has_bull, index
-        if section[-1] == '?' or section[-1] == '？':
-            bull_x0_list.append(box['x0'])
+        if section[-1] == "?" or section[-1] == "？":
+            bull_x0_list.append(box["x0"])
             return has_bull, index
-        if box['layout_type'] == 'title':
-            bull_x0_list.append(box['x0'])
+        if box["layout_type"] == "title":
+            bull_x0_list.append(box["x0"])
             return has_bull, index
         pure_section = section.lstrip(re.match(reg, section).group()).lower()
-        ask_reg = r'(what|when|where|how|why|which|who|whose|为什么|为啥|哪)'
+        ask_reg = r"(what|when|where|how|why|which|who|whose|为什么|为啥|哪)"
         if re.match(ask_reg, pure_section):
-            bull_x0_list.append(box['x0'])
+            bull_x0_list.append(box["x0"])
             return has_bull, index
     return None, last_index
 
@@ -165,38 +254,38 @@ def qbullets_category(sections):
     return res, QUESTION_PATTERN[res]
 
 
-BULLET_PATTERN = [[
-    r"第[零一二三四五六七八九十百0-9]+(分?编|部分)",
-    r"第[零一二三四五六七八九十百0-9]+章",
-    r"第[零一二三四五六七八九十百0-9]+节",
-    r"第[零一二三四五六七八九十百0-9]+条",
-    r"[\(（][零一二三四五六七八九十百]+[\)）]",
-], [
-    r"第[0-9]+章",
-    r"第[0-9]+节",
-    r"[0-9]{,2}[\. 、]",
-    r"[0-9]{,2}\.[0-9]{,2}[^a-zA-Z/%~-]",
-    r"[0-9]{,2}\.[0-9]{,2}\.[0-9]{,2}",
-    r"[0-9]{,2}\.[0-9]{,2}\.[0-9]{,2}\.[0-9]{,2}",
-], [
-    r"第[零一二三四五六七八九十百0-9]+章",
-    r"第[零一二三四五六七八九十百0-9]+节",
-    r"[零一二三四五六七八九十百]+[ 、]",
-    r"[\(（][零一二三四五六七八九十百]+[\)）]",
-    r"[\(（][0-9]{,2}[\)）]",
-], [
-    r"PART (ONE|TWO|THREE|FOUR|FIVE|SIX|SEVEN|EIGHT|NINE|TEN)",
-    r"Chapter (I+V?|VI*|XI|IX|X)",
-    r"Section [0-9]+",
-    r"Article [0-9]+"
-], [
-    r"^#[^#]",
-    r"^##[^#]",
-    r"^###.*",
-    r"^####.*",
-    r"^#####.*",
-    r"^######.*",
-]
+BULLET_PATTERN = [
+    [
+        r"第[零一二三四五六七八九十百0-9]+(分?编|部分)",
+        r"第[零一二三四五六七八九十百0-9]+章",
+        r"第[零一二三四五六七八九十百0-9]+节",
+        r"第[零一二三四五六七八九十百0-9]+条",
+        r"[\(（][零一二三四五六七八九十百]+[\)）]",
+    ],
+    [
+        r"第[0-9]+章",
+        r"第[0-9]+节",
+        r"[0-9]{,2}[\. 、]",
+        r"[0-9]{,2}\.[0-9]{,2}[^a-zA-Z/%~-]",
+        r"[0-9]{,2}\.[0-9]{,2}\.[0-9]{,2}",
+        r"[0-9]{,2}\.[0-9]{,2}\.[0-9]{,2}\.[0-9]{,2}",
+    ],
+    [
+        r"第[零一二三四五六七八九十百0-9]+章",
+        r"第[零一二三四五六七八九十百0-9]+节",
+        r"[零一二三四五六七八九十百]+[ 、]",
+        r"[\(（][零一二三四五六七八九十百]+[\)）]",
+        r"[\(（][0-9]{,2}[\)）]",
+    ],
+    [r"PART (ONE|TWO|THREE|FOUR|FIVE|SIX|SEVEN|EIGHT|NINE|TEN)", r"Chapter (I+V?|VI*|XI|IX|X)", r"Section [0-9]+", r"Article [0-9]+"],
+    [
+        r"^#[^#]",
+        r"^##[^#]",
+        r"^###.*",
+        r"^####.*",
+        r"^#####.*",
+        r"^######.*",
+    ],
 ]
 
 
@@ -206,9 +295,7 @@ def random_choices(arr, k):
 
 
 def not_bullet(line):
-    patt = [
-        r"0", r"[0-9]+ +[0-9~个只-]", r"[0-9]+\.{2,}"
-    ]
+    patt = [r"0", r"[0-9]+ +[0-9~个只-]", r"[0-9]+\.{2,}"]
     return any([re.match(r, line) for r in patt])
 
 
@@ -257,7 +344,7 @@ def is_chinese(text):
         return False
     chinese = 0
     for ch in text:
-        if '\u4e00' <= ch <= '\u9fff':
+        if "\u4e00" <= ch <= "\u9fff":
             chinese += 1
     if chinese / len(text) > 0.2:
         return True
@@ -287,10 +374,11 @@ def tokenize_chunks(chunks, doc, eng, pdf_parser=None):
             except NotImplementedError:
                 pass
         else:
-            add_positions(d, [[ii]*5])
+            add_positions(d, [[ii] * 5])
         tokenize(d, ck, eng)
         res.append(d)
     return res
+
 
 def tokenize_chunks_with_images(chunks, doc, eng, images):
     res = []
@@ -301,10 +389,11 @@ def tokenize_chunks_with_images(chunks, doc, eng, images):
         logging.debug("-- {}".format(ck))
         d = copy.deepcopy(doc)
         d["image"] = image
-        add_positions(d, [[ii]*5])
+        add_positions(d, [[ii] * 5])
         tokenize(d, ck, eng)
         res.append(d)
     return res
+
 
 def tokenize_table(tbls, doc, eng, batch_size=10):
     res = []
@@ -326,7 +415,7 @@ def tokenize_table(tbls, doc, eng, batch_size=10):
         de = "; " if eng else "； "
         for i in range(0, len(rows), batch_size):
             d = copy.deepcopy(doc)
-            r = de.join(rows[i:i + batch_size])
+            r = de.join(rows[i : i + batch_size])
             tokenize(d, r, eng)
             if img:
                 d["image"] = img
@@ -354,13 +443,12 @@ def add_positions(d, poss):
 def remove_contents_table(sections, eng=False):
     i = 0
     while i < len(sections):
+
         def get(i):
             nonlocal sections
-            return (sections[i] if isinstance(sections[i],
-                                              type("")) else sections[i][0]).strip()
+            return (sections[i] if isinstance(sections[i], type("")) else sections[i][0]).strip()
 
-        if not re.match(r"(contents|目录|目次|table of contents|致谢|acknowledge)$",
-                        re.sub(r"( | |\u3000)+", "", get(i).split("@@")[0], flags=re.IGNORECASE)):
+        if not re.match(r"(contents|目录|目次|table of contents|致谢|acknowledge)$", re.sub(r"( | |\u3000)+", "", get(i).split("@@")[0], flags=re.IGNORECASE)):
             i += 1
             continue
         sections.pop(i)
@@ -434,30 +522,29 @@ def not_title(txt):
         return True
     return re.search(r"[,;，。；！!]", txt)
 
+
 def tree_merge(bull, sections, depth):
-    
     if not sections or bull < 0:
         return sections
     if isinstance(sections[0], type("")):
         sections = [(s, "") for s in sections]
-    
+
     # filter out position information in pdf sections
-    sections = [(t, o) for t, o in sections if
-                t and len(t.split("@")[0].strip()) > 1 and not re.match(r"[0-9]+$", t.split("@")[0].strip())]
-    
+    sections = [(t, o) for t, o in sections if t and len(t.split("@")[0].strip()) > 1 and not re.match(r"[0-9]+$", t.split("@")[0].strip())]
+
     def get_level(bull, section):
         text, layout = section
-        text = re.sub(r"\u3000", " ",   text).strip()
+        text = re.sub(r"\u3000", " ", text).strip()
 
         for i, title in enumerate(BULLET_PATTERN[bull]):
             if re.match(title, text.strip()):
-                return i+1, text
+                return i + 1, text
         else:
             if re.search(r"(title|head)", layout) and not not_title(text):
-                return len(BULLET_PATTERN[bull])+1, text
+                return len(BULLET_PATTERN[bull]) + 1, text
             else:
-                return len(BULLET_PATTERN[bull])+2, text
-    
+                return len(BULLET_PATTERN[bull]) + 2, text
+
     level_set = set()
     lines = []
     for section in sections:
@@ -465,7 +552,7 @@ def tree_merge(bull, sections, depth):
 
         if not text.strip("\n"):
             continue
-            
+
         lines.append((level, text))
         level_set.add(level)
 
@@ -484,14 +571,13 @@ def tree_merge(bull, sections, depth):
 
     return [("\n").join(element) for element in root.get_tree() if element]
 
-def hierarchical_merge(bull, sections, depth):
 
+def hierarchical_merge(bull, sections, depth):
     if not sections or bull < 0:
         return []
     if isinstance(sections[0], type("")):
         sections = [(s, "") for s in sections]
-    sections = [(t, o) for t, o in sections if
-                t and len(t.split("@")[0].strip()) > 1 and not re.match(r"[0-9]+$", t.split("@")[0].strip())]
+    sections = [(t, o) for t, o in sections if t and len(t.split("@")[0].strip()) > 1 and not re.match(r"[0-9]+$", t.split("@")[0].strip())]
     bullets_size = len(BULLET_PATTERN[bull])
     levels = [[] for _ in range(bullets_size + 2)]
 
@@ -577,6 +663,7 @@ def hierarchical_merge(bull, sections, depth):
 
 def naive_merge(sections: str | list, chunk_token_num=128, delimiter="\n。；！？", overlapped_percent=0):
     from deepdoc.parser.pdf_parser import RAGFlowPdfParser
+
     if not sections:
         return []
     if isinstance(sections[0], type("")):
@@ -592,10 +679,10 @@ def naive_merge(sections: str | list, chunk_token_num=128, delimiter="\n。；�
         if tnum < 8:
             pos = ""
         # Ensure that the length of the merged chunk does not exceed chunk_token_num
-        if cks[-1] == "" or tk_nums[-1] > chunk_token_num * (100 - overlapped_percent)/100.:
+        if cks[-1] == "" or tk_nums[-1] > chunk_token_num * (100 - overlapped_percent) / 100.0:
             if cks:
                 overlapped = RAGFlowPdfParser.remove_tag(cks[-1])
-                t = overlapped[int(len(overlapped)*(100-overlapped_percent)/100.):] + t
+                t = overlapped[int(len(overlapped) * (100 - overlapped_percent) / 100.0) :] + t
             if t.find(pos) < 0:
                 t += pos
             cks.append(t)
@@ -622,6 +709,7 @@ def naive_merge(sections: str | list, chunk_token_num=128, delimiter="\n。；�
 
 def naive_merge_with_images(texts, images, chunk_token_num=128, delimiter="\n。；！？", overlapped_percent=0):
     from deepdoc.parser.pdf_parser import RAGFlowPdfParser
+
     if not texts or len(texts) != len(images):
         return [], []
     cks = [""]
@@ -636,10 +724,10 @@ def naive_merge_with_images(texts, images, chunk_token_num=128, delimiter="\n。
         if tnum < 8:
             pos = ""
         # Ensure that the length of the merged chunk does not exceed chunk_token_num
-        if cks[-1] == "" or tk_nums[-1] > chunk_token_num * (100 - overlapped_percent)/100.:
+        if cks[-1] == "" or tk_nums[-1] > chunk_token_num * (100 - overlapped_percent) / 100.0:
             if cks:
                 overlapped = RAGFlowPdfParser.remove_tag(cks[-1])
-                t = overlapped[int(len(overlapped)*(100-overlapped_percent)/100.):] + t
+                t = overlapped[int(len(overlapped) * (100 - overlapped_percent) / 100.0) :] + t
             if t.find(pos) < 0:
                 t += pos
             cks.append(t)
@@ -675,17 +763,18 @@ def naive_merge_with_images(texts, images, chunk_token_num=128, delimiter="\n。
 
     return cks, result_images
 
+
 def docx_question_level(p, bull=-1):
     txt = re.sub(r"\u3000", " ", p.text).strip()
-    if p.style.name.startswith('Heading'):
-        return int(p.style.name.split(' ')[-1]), txt
+    if p.style.name.startswith("Heading"):
+        return int(p.style.name.split(" ")[-1]), txt
     else:
         if bull < 0:
             return 0, txt
         for j, title in enumerate(BULLET_PATTERN[bull]):
             if re.match(title, txt):
                 return j + 1, txt
-    return len(BULLET_PATTERN[bull])+1, txt
+    return len(BULLET_PATTERN[bull]) + 1, txt
 
 
 def concat_img(img1, img2):
@@ -710,7 +799,7 @@ def concat_img(img1, img2):
 
     new_width = max(width1, width2)
     new_height = height1 + height2
-    new_image = Image.new('RGB', (new_width, new_height))
+    new_image = Image.new("RGB", (new_width, new_height))
 
     new_image.paste(img1, (0, 0))
     new_image.paste(img2, (0, height1))
@@ -753,7 +842,7 @@ def naive_merge_docx(sections, chunk_token_num=128, delimiter="\n。；！？"):
         for sub_sec in split_sec:
             if re.match(f"^{dels}$", sub_sec):
                 continue
-            add_chunk(sub_sec, image,"")
+            add_chunk(sub_sec, image, "")
         line = ""
 
     if line:
@@ -761,7 +850,7 @@ def naive_merge_docx(sections, chunk_token_num=128, delimiter="\n。；！？"):
         for sub_sec in split_sec:
             if re.match(f"^{dels}$", sub_sec):
                 continue
-            add_chunk(sub_sec, image,"")
+            add_chunk(sub_sec, image, "")
 
     return cks, images
 
@@ -777,7 +866,7 @@ def get_delimiters(delimiters: str):
     for m in re.finditer(r"`([^`]+)`", delimiters, re.I):
         f, t = m.span()
         dels.append(m.group(1))
-        dels.extend(list(delimiters[s: f]))
+        dels.extend(list(delimiters[s:f]))
         s = t
     if s < len(delimiters):
         dels.extend(list(delimiters[s:]))
@@ -788,6 +877,7 @@ def get_delimiters(delimiters: str):
     dels_pattern = "|".join(dels)
 
     return dels_pattern
+
 
 class Node:
     def __init__(self, level, depth=-1, texts=None):
@@ -821,7 +911,7 @@ class Node:
         return f"Node(level={self.level}, texts={self.texts}, children={len(self.children)})"
 
     def build_tree(self, lines):
-        stack = [self]  
+        stack = [self]
         for line in lines:
             level, text = line
             node = Node(level=level, texts=[text])
@@ -834,22 +924,20 @@ class Node:
                 stack.append(node)
             else:
                 stack[-1].add_text(text)
-        return self  
+        return self
 
     def get_tree(self):
-        tree_list = []  
+        tree_list = []
         self._dfs(self, tree_list, 0, [])
         return tree_list
 
     def _dfs(self, node, tree_list, current_depth, titles):
-
         if node.get_texts():
             if 0 < node.get_level() < self.depth:
                 titles.extend(node.get_texts())
             else:
                 combined_text = ["\n".join(titles + node.get_texts())]
                 tree_list.append(combined_text)
-
 
         for child in node.get_children():
             self._dfs(child, tree_list, current_depth + 1, titles.copy())

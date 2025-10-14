@@ -1,4 +1,7 @@
 repos:
+  # -------------------
+  # Basic hygiene: YAML, JSON, whitespace, merge conflicts
+  # -------------------
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.6.0
     hooks:
@@ -11,9 +14,14 @@ repos:
       - id: mixed-line-ending
       - id: check-symlinks
 
+  # -------------------
+  # Python linting + formatting with Ruff
+  # -------------------
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.11.6
+    rev: v0.11.6  # Latest stable
     hooks:
+      # Linting (like flake8 + pyright checks)
       - id: ruff
-        args: [ --fix ]
+      # Auto-formatting (Black-compatible)
       - id: ruff-format
+      #  args: ["--exit-zero"]  # optional: prevent failing if only formatting

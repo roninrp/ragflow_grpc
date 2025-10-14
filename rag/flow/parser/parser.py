@@ -46,17 +46,10 @@ class ParserParam(ProcessParamBase):
                 "json",
             ],
             "ppt": [],
-            "image": [
-                "text"
-            ],
+            "image": ["text"],
             "email": [],
-            "text": [
-                "text",
-                "json"
-            ],
-            "audio": [
-                "json"
-            ],
+            "text": ["text", "json"],
+            "audio": ["json"],
             "video": [],
         }
 
@@ -99,29 +92,11 @@ class ParserParam(ProcessParamBase):
             },
             "email": {},
             "text": {
-                "suffix": [
-                    "txt"
-                ],
+                "suffix": ["txt"],
                 "output_format": "json",
             },
             "audio": {
-                "suffix":[
-                    "da",
-                    "wave",
-                    "wav",
-                    "mp3",
-                    "aac",
-                    "flac",
-                    "ogg",
-                    "aiff",
-                    "au",
-                    "midi",
-                    "wma",
-                    "realaudio",
-                    "vqf",
-                    "oggvorbis",
-                    "ape"
-                ],
+                "suffix": ["da", "wave", "wav", "mp3", "aac", "flac", "ogg", "aiff", "au", "midi", "wma", "realaudio", "vqf", "oggvorbis", "ape"],
                 "output_format": "json",
             },
             "video": {},
@@ -232,7 +207,7 @@ class Parser(ProcessBase):
             self.set_output("markdown", spreadsheet_parser.markdown(blob))
 
     def _word(self, from_upstream: ParserFromUpstream):
-        from tika import parser as  word_parser
+        from tika import parser as word_parser
 
         self.callback(random.randint(1, 5) / 100.0, "Start to work on a Word Processor Document")
 
@@ -332,7 +307,7 @@ class Parser(ProcessBase):
 
         else:
             # use VLM to describe the picture
-            cv_model = LLMBundle(self._canvas.get_tenant_id(), LLMType.IMAGE2TEXT, llm_name=conf["llm_id"],lang=lang)
+            cv_model = LLMBundle(self._canvas.get_tenant_id(), LLMType.IMAGE2TEXT, llm_name=conf["llm_id"], lang=lang)
             img_binary = io.BytesIO()
             img.save(img_binary, format="JPEG")
             img_binary.seek(0)

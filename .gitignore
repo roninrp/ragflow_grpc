@@ -195,3 +195,8 @@ dist
 
 # Default backup dir
 backup
+
+# --- Jupyter ---
+.ipynb_checkpoints/
+*/.ipynb_checkpoints/
+*.nbconvert.ipynb

@@ -1,0 +1,285 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>grpc_async_ragclient &mdash; async_grpc_ragflow v1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+
+
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=5cb08e4e"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+</head>
+
+<body class="wy-body-for-nav">
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+
+
+          <a href="../index.html" class="icon icon-home">
+            async_grpc_ragflow
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../modules.html">grpc_server</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">async_grpc_ragflow</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="index.html">Module code</a></li>
+      <li class="breadcrumb-item active">grpc_async_ragclient</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+
+  <h1>Source code for grpc_async_ragclient</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Asynchronous gRPC client communicating with a similar gRPC server </span>
+<span class="sd">serving the registration, login and new_token HTTP endpoints of RAGFlow&#39;s server</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">grpc</span> <span class="c1"># type: ignore </span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dotenv</span><span class="w"> </span><span class="kn">import</span> <span class="n">load_dotenv</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">ragflow_register_login_getapi_pb2</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pb2</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">ragflow_register_login_getapi_pb2_grpc</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pb2_grpc</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">crypto_utils_grpc</span><span class="w"> </span><span class="kn">import</span> <span class="n">encrypt_password</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+
+<span class="c1"># For more channel options, please see https://grpc.io/grpc/core/group__grpc__arg__keys.html</span>
+<span class="n">CHANNEL_OPTIONS</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="p">(</span><span class="s2">&quot;grpc.lb_policy_name&quot;</span><span class="p">,</span> <span class="s2">&quot;pick_first&quot;</span><span class="p">),</span>
+    <span class="p">(</span><span class="s2">&quot;grpc.enable_retries&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
+    <span class="p">(</span><span class="s2">&quot;grpc.keepalive_timeout_ms&quot;</span><span class="p">,</span> <span class="mi">10000</span><span class="p">),</span>
+<span class="p">]</span>
+
+
+<span class="c1"># ---------------------------------------------------------------------</span>
+<span class="c1"># Load environment</span>
+<span class="c1"># ---------------------------------------------------------------------</span>
+<span class="n">load_dotenv</span><span class="p">()</span>
+
+<span class="n">GRPC_PORT</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&quot;GRPC_PORT&quot;</span><span class="p">,</span> <span class="s2">&quot;50051&quot;</span><span class="p">)</span>
+
+<span class="c1"># ---------------------------------------------------------------------</span>
+<span class="c1"># gRPC Client Implementation</span>
+<span class="c1"># ---------------------------------------------------------------------</span>
+
+<div class="viewcode-block" id="registration">
+<a class="viewcode-back" href="../grpc_async_ragclient.html#grpc_async_ragclient.registration">[docs]</a>
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">registration</span><span class="p">(</span><span class="n">email</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">password</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Registers users by accessing &quot;/v1/user/register&quot; HTTP endpoint.</span>
+<span class="sd">    Accessed indirectly via the equivalent grpc server method.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    email : str</span>
+<span class="sd">        Email, enter a valid str with @ in it</span>
+<span class="sd">    name : str</span>
+<span class="sd">        User&#39;s nickname on the ragflow server</span>
+<span class="sd">    password : str</span>
+<span class="sd">        Human readable password</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    reply : str</span>
+<span class="sd">        Reply from the Ragflow server</span>
+<span class="sd">        </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;&quot;&quot;Send a query via gRPC to the RagServices server.&quot;&quot;&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;localhost:</span><span class="si">{</span><span class="n">GRPC_PORT</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="n">en_pass</span> <span class="o">=</span> <span class="n">encrypt_password</span><span class="p">(</span><span class="n">password</span><span class="p">)</span>
+    <span class="n">encrypted_password</span> <span class="o">=</span> <span class="n">en_pass</span><span class="p">[</span><span class="s2">&quot;encrypted_password&quot;</span><span class="p">]</span>
+    <span class="n">nonce</span> <span class="o">=</span> <span class="n">en_pass</span><span class="p">[</span><span class="s2">&quot;nonce&quot;</span><span class="p">]</span>
+    <span class="n">tag</span> <span class="o">=</span> <span class="n">en_pass</span><span class="p">[</span><span class="s2">&quot;tag&quot;</span><span class="p">]</span>
+
+    <span class="k">async</span> <span class="k">with</span> <span class="n">grpc</span><span class="o">.</span><span class="n">aio</span><span class="o">.</span><span class="n">insecure_channel</span><span class="p">(</span>
+        <span class="n">target</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;localhost:</span><span class="si">{</span><span class="n">GRPC_PORT</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="n">CHANNEL_OPTIONS</span>
+    <span class="p">)</span> <span class="k">as</span> <span class="n">channel</span><span class="p">:</span>
+    <span class="c1"># channel = grpc.insecure_channel(f&quot;localhost:{GRPC_PORT}&quot;)</span>
+        <span class="n">stub</span> <span class="o">=</span> <span class="n">pb2_grpc</span><span class="o">.</span><span class="n">RagServicesStub</span><span class="p">(</span><span class="n">channel</span><span class="p">)</span>
+
+        <span class="n">request</span> <span class="o">=</span> <span class="n">pb2</span><span class="o">.</span><span class="n">RegistrationCredentials</span><span class="p">(</span><span class="n">email</span><span class="o">=</span><span class="n">email</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="n">encrypted_password</span><span class="o">=</span><span class="n">encrypted_password</span><span class="p">,</span> <span class="n">nonce</span><span class="o">=</span><span class="n">nonce</span><span class="p">,</span> <span class="n">tag</span><span class="o">=</span><span class="n">tag</span><span class="p">)</span> <span class="c1"># type: ignore </span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="k">await</span> <span class="n">stub</span><span class="o">.</span><span class="n">Registration</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;🔹 Registration Details: </span><span class="si">{</span><span class="n">email</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">encrypted_password</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;🔸 RagFlow Reply: </span><span class="si">{</span><span class="n">response</span><span class="o">.</span><span class="n">reply</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">response</span><span class="o">.</span><span class="n">reply</span></div>
+
+
+<div class="viewcode-block" id="login">
+<a class="viewcode-back" href="../grpc_async_ragclient.html#grpc_async_ragclient.login">[docs]</a>
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">login</span><span class="p">(</span><span class="n">email</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">password</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Logs registerd users in by accessing &quot;/v1/user/login&quot; HTTP endpoint.</span>
+<span class="sd">    Accessed indirectly via the equivalent grpc server method.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    email : str</span>
+<span class="sd">        Email, enter a valid str with @ in it</span>
+<span class="sd">    password : str</span>
+<span class="sd">        Human readable password</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    reply : str</span>
+<span class="sd">        Reply from the Ragflow server</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;&quot;&quot;Send a query via gRPC to the RagServices server.&quot;&quot;&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;localhost:</span><span class="si">{</span><span class="n">GRPC_PORT</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="n">en_pass</span> <span class="o">=</span> <span class="n">encrypt_password</span><span class="p">(</span><span class="n">password</span><span class="p">)</span>
+    <span class="n">encrypted_password</span> <span class="o">=</span> <span class="n">en_pass</span><span class="p">[</span><span class="s2">&quot;encrypted_password&quot;</span><span class="p">]</span>
+    <span class="n">nonce</span> <span class="o">=</span> <span class="n">en_pass</span><span class="p">[</span><span class="s2">&quot;nonce&quot;</span><span class="p">]</span>
+    <span class="n">tag</span> <span class="o">=</span> <span class="n">en_pass</span><span class="p">[</span><span class="s2">&quot;tag&quot;</span><span class="p">]</span>
+
+    <span class="k">async</span> <span class="k">with</span> <span class="n">grpc</span><span class="o">.</span><span class="n">aio</span><span class="o">.</span><span class="n">insecure_channel</span><span class="p">(</span>
+        <span class="n">target</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;localhost:</span><span class="si">{</span><span class="n">GRPC_PORT</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="n">CHANNEL_OPTIONS</span>
+    <span class="p">)</span> <span class="k">as</span> <span class="n">channel</span><span class="p">:</span>
+
+    <span class="c1"># channel = grpc.insecure_channel(f&quot;localhost:{GRPC_PORT}&quot;)</span>
+        <span class="n">stub</span> <span class="o">=</span> <span class="n">pb2_grpc</span><span class="o">.</span><span class="n">RagServicesStub</span><span class="p">(</span><span class="n">channel</span><span class="p">)</span>
+
+        <span class="n">request</span> <span class="o">=</span> <span class="n">pb2</span><span class="o">.</span><span class="n">LoginCredentials</span><span class="p">(</span><span class="n">email</span><span class="o">=</span><span class="n">email</span><span class="p">,</span> <span class="n">encrypted_password</span><span class="o">=</span><span class="n">encrypted_password</span><span class="p">,</span> <span class="n">nonce</span><span class="o">=</span><span class="n">nonce</span><span class="p">,</span> <span class="n">tag</span><span class="o">=</span><span class="n">tag</span><span class="p">)</span> <span class="c1"># type: ignore </span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="k">await</span> <span class="n">stub</span><span class="o">.</span><span class="n">Login</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;🔹 Login Details: </span><span class="si">{</span><span class="n">email</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">encrypted_password</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;🔸 RagFlow Reply: </span><span class="si">{</span><span class="n">response</span><span class="o">.</span><span class="n">reply</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">response</span><span class="o">.</span><span class="n">reply</span></div>
+
+
+<div class="viewcode-block" id="getapikey">
+<a class="viewcode-back" href="../grpc_async_ragclient.html#grpc_async_ragclient.getapikey">[docs]</a>
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">getapikey</span><span class="p">(</span><span class="n">email</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">password</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Obtains a new api token for registerd users by accessing &quot;/v1/user/login&quot; HTTP endpoint.</span>
+<span class="sd">    Accessed indirectly via the equivalent grpc server method.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    email : str</span>
+<span class="sd">        Email, enter a valid str with @ in it</span>
+<span class="sd">    password : str</span>
+<span class="sd">        Human readable password</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    reply : str</span>
+<span class="sd">        Reply from the Ragflow server</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;&quot;&quot;Send a query via gRPC to the RagServices server.&quot;&quot;&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;localhost:</span><span class="si">{</span><span class="n">GRPC_PORT</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="n">en_pass</span> <span class="o">=</span> <span class="n">encrypt_password</span><span class="p">(</span><span class="n">password</span><span class="p">)</span>
+    <span class="n">encrypted_password</span> <span class="o">=</span> <span class="n">en_pass</span><span class="p">[</span><span class="s2">&quot;encrypted_password&quot;</span><span class="p">]</span>
+    <span class="n">nonce</span> <span class="o">=</span> <span class="n">en_pass</span><span class="p">[</span><span class="s2">&quot;nonce&quot;</span><span class="p">]</span>
+    <span class="n">tag</span> <span class="o">=</span> <span class="n">en_pass</span><span class="p">[</span><span class="s2">&quot;tag&quot;</span><span class="p">]</span>
+
+    <span class="k">async</span> <span class="k">with</span> <span class="n">grpc</span><span class="o">.</span><span class="n">aio</span><span class="o">.</span><span class="n">insecure_channel</span><span class="p">(</span>
+        <span class="n">target</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;localhost:</span><span class="si">{</span><span class="n">GRPC_PORT</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="n">CHANNEL_OPTIONS</span>
+    <span class="p">)</span> <span class="k">as</span> <span class="n">channel</span><span class="p">:</span>
+
+    <span class="c1"># channel = grpc.insecure_channel(f&quot;localhost:{GRPC_PORT}&quot;)</span>
+        <span class="n">stub</span> <span class="o">=</span> <span class="n">pb2_grpc</span><span class="o">.</span><span class="n">RagServicesStub</span><span class="p">(</span><span class="n">channel</span><span class="p">)</span>
+
+        <span class="n">request</span> <span class="o">=</span> <span class="n">pb2</span><span class="o">.</span><span class="n">LoginCredentials</span><span class="p">(</span><span class="n">email</span><span class="o">=</span><span class="n">email</span><span class="p">,</span> <span class="n">encrypted_password</span><span class="o">=</span><span class="n">encrypted_password</span><span class="p">,</span> <span class="n">nonce</span><span class="o">=</span><span class="n">nonce</span><span class="p">,</span> <span class="n">tag</span><span class="o">=</span><span class="n">tag</span><span class="p">)</span> <span class="c1"># type: ignore </span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="k">await</span> <span class="n">stub</span><span class="o">.</span><span class="n">GetApiKey</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;🔹 Login Details: </span><span class="si">{</span><span class="n">email</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">encrypted_password</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;🔸 RagFlow Reply: </span><span class="si">{</span><span class="n">response</span><span class="o">.</span><span class="n">reply</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">response</span><span class="o">.</span><span class="n">reply</span></div>
+
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="n">logging</span><span class="o">.</span><span class="n">basicConfig</span><span class="p">()</span>
+    <span class="c1"># Example usage</span>
+    <span class="n">email</span> <span class="o">=</span> <span class="s2">&quot;rag_flow_101@gmail.com&quot;</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;rag_101&quot;</span>
+    <span class="n">password</span> <span class="o">=</span> <span class="s2">&quot;infini_rag_flow&quot;</span>
+
+    <span class="c1"># asyncio.run(registration(email= email, name=name, password=password))</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">reply</span> <span class="o">=</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">login</span><span class="p">(</span><span class="n">email</span><span class="o">=</span> <span class="n">email</span><span class="p">,</span> <span class="n">password</span><span class="o">=</span><span class="n">password</span><span class="p">))</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">reply</span><span class="p">)</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">reply</span> <span class="o">=</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">getapikey</span><span class="p">(</span><span class="n">email</span><span class="o">=</span> <span class="n">email</span><span class="p">,</span> <span class="n">password</span><span class="o">=</span><span class="n">password</span><span class="p">))</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">reply</span><span class="p">)</span>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Rohan R. Poojary.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+</body>
+</html>

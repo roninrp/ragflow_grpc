@@ -32,7 +32,7 @@ class RetrievalParam(ToolParamBase):
     """
 
     def __init__(self):
-        self.meta:ToolMeta = {
+        self.meta: ToolMeta = {
             "name": "search_my_dateset",
             "description": "This tool can be utilized for relevant content searching in the datasets.",
             "parameters": {
@@ -40,9 +40,9 @@ class RetrievalParam(ToolParamBase):
                     "type": "string",
                     "description": "The keywords to search the dataset. The keywords should be the most important words/terms(includes synonyms) from the original request.",
                     "default": "",
-                    "required": True
+                    "required": True,
                 }
-            }
+            },
         }
         super().__init__()
         self.function_name = "search_my_dateset"
@@ -64,12 +64,8 @@ class RetrievalParam(ToolParamBase):
         self.check_positive_number(self.top_n, "[Retrieval] Top N")
 
     def get_input_form(self) -> dict[str, dict]:
-        return {
-            "query": {
-                "name": "Query",
-                "type": "line"
-            }
-        }
+        return {"query": {"name": "Query", "type": "line"}}
+
 
 class Retrieval(ToolBase, ABC):
     component_name = "Retrieval"
@@ -88,8 +84,7 @@ class Retrieval(ToolBase, ABC):
             # if kb_nm is a list
             kb_nm_list = kb_nm if isinstance(kb_nm, list) else [kb_nm]
             for nm_or_id in kb_nm_list:
-                e, kb = KnowledgebaseService.get_by_name(nm_or_id,
-                                                         self._canvas._tenant_id)
+                e, kb = KnowledgebaseService.get_by_name(nm_or_id, self._canvas._tenant_id)
                 if not e:
                     e, kb = KnowledgebaseService.get_by_id(nm_or_id)
                     if not e:
@@ -114,7 +109,7 @@ class Retrieval(ToolBase, ABC):
             rerank_mdl = LLMBundle(kbs[0].tenant_id, LLMType.RERANK, self._param.rerank_id)
 
         vars = self.get_input_elements_from_text(kwargs["query"])
-        vars = {k:o["value"] for k,o in vars.items()}
+        vars = {k: o["value"] for k, o in vars.items()}
         query = self.string_format(kwargs["query"], vars)
         if self._param.cross_languages:
             query = cross_languages(kbs[0].tenant_id, None, query, self._param.cross_languages)
@@ -135,11 +130,7 @@ class Retrieval(ToolBase, ABC):
                 rank_feature=label_question(query, kbs),
             )
             if self._param.use_kg:
-                ck = settings.kg_retrievaler.retrieval(query,
-                                                       [kb.tenant_id for kb in kbs],
-                                                       kb_ids,
-                                                       embd_mdl,
-                                                       LLMBundle(self._canvas.get_tenant_id(), LLMType.CHAT))
+                ck = settings.kg_retrievaler.retrieval(query, [kb.tenant_id for kb in kbs], kb_ids, embd_mdl, LLMBundle(self._canvas.get_tenant_id(), LLMType.CHAT))
                 if ck["content_with_weight"]:
                     kbinfos["chunks"].insert(0, ck)
         else:

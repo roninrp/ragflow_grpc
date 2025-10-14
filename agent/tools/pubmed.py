@@ -30,7 +30,7 @@ class PubMedParam(ToolParamBase):
     """
 
     def __init__(self):
-        self.meta:ToolMeta = {
+        self.meta: ToolMeta = {
             "name": "pubmed_search",
             "description": """
 PubMed is an openly accessible, free database which includes primarily the MEDLINE database of references and abstracts on life sciences and biomedical topics.
@@ -47,9 +47,9 @@ In addition to MEDLINE, PubMed provides access to:
                     "type": "string",
                     "description": "The search keywords to execute with PubMed. The keywords should be the most important words/terms(includes synonyms) from the original request.",
                     "default": "{sys.query}",
-                    "required": True
+                    "required": True,
                 }
-            }
+            },
         }
         super().__init__()
         self.top_n = 12
@@ -59,12 +59,8 @@ In addition to MEDLINE, PubMed provides access to:
         self.check_positive_integer(self.top_n, "Top N")
 
     def get_input_form(self) -> dict[str, dict]:
-        return {
-            "query": {
-                "name": "Query",
-                "type": "line"
-            }
-        }
+        return {"query": {"name": "Query", "type": "line"}}
+
 
 class PubMed(ToolBase, ABC):
     component_name = "PubMed"
@@ -76,22 +72,21 @@ class PubMed(ToolBase, ABC):
             return ""
 
         last_e = ""
-        for _ in range(self._param.max_retries+1):
+        for _ in range(self._param.max_retries + 1):
             try:
                 Entrez.email = self._param.email
-                pubmedids = Entrez.read(Entrez.esearch(db='pubmed', retmax=self._param.top_n, term=kwargs["query"]))['IdList']
-                pubmedcnt = ET.fromstring(re.sub(r'<(/?)b>|<(/?)i>', '', Entrez.efetch(db='pubmed', id=",".join(pubmedids),
-                                                                                       retmode="xml").read().decode("utf-8")))
-                self._retrieve_chunks(pubmedcnt.findall("PubmedArticle"),
-                                      get_title=lambda child: child.find("MedlineCitation").find("Article").find("ArticleTitle").text,
-                                      get_url=lambda child: "https://pubmed.ncbi.nlm.nih.gov/" + child.find("MedlineCitation").find("PMID").text,
-                                      get_content=lambda child: child.find("MedlineCitation") \
-                                                                    .find("Article") \
-                                                                    .find("Abstract") \
-                                                                    .find("AbstractText").text \
-                                                                    if child.find("MedlineCitation")\
-                                                                            .find("Article").find("Abstract")  \
-                                                                    else "No abstract available")
+                pubmedids = Entrez.read(Entrez.esearch(db="pubmed", retmax=self._param.top_n, term=kwargs["query"]))["IdList"]
+                pubmedcnt = ET.fromstring(re.sub(r"<(/?)b>|<(/?)i>", "", Entrez.efetch(db="pubmed", id=",".join(pubmedids), retmode="xml").read().decode("utf-8")))
+                self._retrieve_chunks(
+                    pubmedcnt.findall("PubmedArticle"),
+                    get_title=lambda child: child.find("MedlineCitation").find("Article").find("ArticleTitle").text,
+                    get_url=lambda child: "https://pubmed.ncbi.nlm.nih.gov/" + child.find("MedlineCitation").find("PMID").text,
+                    get_content=lambda child: (
+                        child.find("MedlineCitation").find("Article").find("Abstract").find("AbstractText").text
+                        if child.find("MedlineCitation").find("Article").find("Abstract")
+                        else "No abstract available"
+                    ),
+                )
                 return self.output("formalized_content")
             except Exception as e:
                 last_e = e

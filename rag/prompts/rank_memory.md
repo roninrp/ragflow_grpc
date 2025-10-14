@@ -10,19 +10,19 @@
 🔹 Overall Goal: {{ goal }}
 🔹 Sub-goal: {{ sub_goal }}
 
-**Examples**:  
-🔹 Tool Response:  
+**Examples**:
+🔹 Tool Response:
  - index: 0
      > Tokyo temperature is 78°F.
  - index: 1
      > Error: Authentication failed (expired API key).
  - index: 2
      > Available: 12 widgets in stock (max 5 per customer).
- 
- → rank: [1,2,0]<|stop|>
- 
 
-**Your Turn**:  
+ → rank: [1,2,0]<|stop|>
+
+
+**Your Turn**:
 🔹 Tool Response:
 {% for f in results %}
  - index: f.i

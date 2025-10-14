@@ -56,7 +56,8 @@ async def execute_code(req: CodeExecutionRequest):
             runner_name = "runner.py"
             runner_path = os.path.join(workdir, runner_name)
             with open(runner_path, "w") as f:
-                f.write("""import json
+                f.write(
+                    """import json
 import os
 import sys
 sys.path.insert(0, os.path.dirname(__file__))
@@ -66,7 +67,8 @@ if __name__ == "__main__":
     result = main(**args)
     if result is not None:
         print(result)
-""")
+"""
+                )
 
         elif language == SupportLanguage.NODEJS:
             code_name = "main.js"
@@ -77,7 +79,8 @@ if __name__ == "__main__":
             runner_name = "runner.js"
             runner_path = os.path.join(workdir, "runner.js")
             with open(runner_path, "w") as f:
-                f.write("""
+                f.write(
+                    """
 const fs = require('fs');
 const path = require('path');
 
@@ -122,7 +125,8 @@ if (fs.existsSync(mainPath)) {
 } else {
     console.error('main.js not found in the current directory');
 }
-""")
+"""
+                )
         # dirs
         returncode, _, stderr = await async_run_command("docker", "exec", container, "mkdir", "-p", f"/workspace/{task_id}", timeout=5)
         if returncode != 0:

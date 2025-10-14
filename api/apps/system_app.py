@@ -39,6 +39,7 @@ from rag.utils.redis_conn import REDIS_CONN
 from flask import jsonify
 from api.utils.health_utils import run_health_checks
 
+
 @manager.route("/version", methods=["GET"])  # noqa: F821
 @login_required
 def version():
@@ -161,7 +162,7 @@ def status():
         task_executors = REDIS_CONN.smembers("TASKEXE")
         now = datetime.now().timestamp()
         for task_executor_id in task_executors:
-            heartbeats = REDIS_CONN.zrangebyscore(task_executor_id, now - 60*30, now)
+            heartbeats = REDIS_CONN.zrangebyscore(task_executor_id, now - 60 * 30, now)
             heartbeats = [json.loads(heartbeat) for heartbeat in heartbeats]
             task_executor_heartbeats[task_executor_id] = heartbeats
     except Exception:
@@ -177,7 +178,7 @@ def healthz():
     return jsonify(result), (200 if all_ok else 500)
 
 
-@manager.route("/ping", methods=["GET"]) # noqa: F821
+@manager.route("/ping", methods=["GET"])  # noqa: F821
 def ping():
     return "pong", 200
 
@@ -213,7 +214,7 @@ def new_token():
         if not tenants:
             return get_data_error_result(message="Tenant not found!")
 
-        tenant_id = [tenant for tenant in tenants if tenant.role == 'owner'][0].tenant_id
+        tenant_id = [tenant for tenant in tenants if tenant.role == "owner"][0].tenant_id
         obj = {
             "tenant_id": tenant_id,
             "token": generate_confirmation_token(tenant_id),
@@ -268,7 +269,7 @@ def token_list():
         if not tenants:
             return get_data_error_result(message="Tenant not found!")
 
-        tenant_id = [tenant for tenant in tenants if tenant.role == 'owner'][0].tenant_id
+        tenant_id = [tenant for tenant in tenants if tenant.role == "owner"][0].tenant_id
         objs = APITokenService.query(tenant_id=tenant_id)
         objs = [o.to_dict() for o in objs]
         for o in objs:
@@ -306,13 +307,11 @@ def rm(token):
               type: boolean
               description: Deletion status.
     """
-    APITokenService.filter_delete(
-        [APIToken.tenant_id == current_user.id, APIToken.token == token]
-    )
+    APITokenService.filter_delete([APIToken.tenant_id == current_user.id, APIToken.token == token])
     return get_json_result(data=True)
 
 
-@manager.route('/config', methods=['GET'])  # noqa: F821
+@manager.route("/config", methods=["GET"])  # noqa: F821
 def get_config():
     """
     Get system configuration.
@@ -329,6 +328,4 @@ def get_config():
                         type: integer 0 means disabled, 1 means enabled
                         description: Whether user registration is enabled
     """
-    return get_json_result(data={
-        "registerEnabled": settings.REGISTER_ENABLED
-    })
+    return get_json_result(data={"registerEnabled": settings.REGISTER_ENABLED})

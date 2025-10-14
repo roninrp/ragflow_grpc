@@ -22,7 +22,7 @@ _Each time a dataset is created, a folder with the same name is generated in the
 
 ## Configure dataset
 
-The following screenshot shows the configuration page of a dataset. A proper configuration of your dataset is crucial for future AI chats. For example, choosing the wrong embedding model or chunking method would cause unexpected semantic loss or mismatched answers in chats. 
+The following screenshot shows the configuration page of a dataset. A proper configuration of your dataset is crucial for future AI chats. For example, choosing the wrong embedding model or chunking method would cause unexpected semantic loss or mismatched answers in chats.
 
 ![dataset configuration](https://raw.githubusercontent.com/infiniflow/ragflow-docs/main/images/configure_knowledge_base.jpg)
 
@@ -74,9 +74,9 @@ These two embedding models are optimized specifically for English and Chinese, s
 ### Upload file
 
 - RAGFlow's **File Management** allows you to link a file to multiple datasets, in which case each target dataset holds a reference to the file.
-- In **Knowledge Base**, you are also given the option of uploading a single file or a folder of files (bulk upload) from your local machine to a dataset, in which case the dataset holds file copies. 
+- In **Knowledge Base**, you are also given the option of uploading a single file or a folder of files (bulk upload) from your local machine to a dataset, in which case the dataset holds file copies.
 
-While uploading files directly to a dataset seems more convenient, we *highly* recommend uploading files to **File Management** and then linking them to the target datasets. This way, you can avoid permanently deleting files uploaded to the dataset. 
+While uploading files directly to a dataset seems more convenient, we *highly* recommend uploading files to **File Management** and then linking them to the target datasets. This way, you can avoid permanently deleting files uploaded to the dataset.
 
 ### Parse file
 
@@ -84,14 +84,14 @@ File parsing is a crucial topic in dataset configuration. The meaning of file pa
 
 ![parse file](https://raw.githubusercontent.com/infiniflow/ragflow-docs/main/images/parse_file.jpg)
 
-- As shown above, RAGFlow allows you to use a different chunking method for a particular file, offering flexibility beyond the default method. 
-- As shown above, RAGFlow allows you to enable or disable individual files, offering finer control over dataset-based AI chats. 
+- As shown above, RAGFlow allows you to use a different chunking method for a particular file, offering flexibility beyond the default method.
+- As shown above, RAGFlow allows you to enable or disable individual files, offering finer control over dataset-based AI chats.
 
 ### Intervene with file parsing results
 
-RAGFlow features visibility and explainability, allowing you to view the chunking results and intervene where necessary. To do so: 
+RAGFlow features visibility and explainability, allowing you to view the chunking results and intervene where necessary. To do so:
 
-1. Click on the file that completes file parsing to view the chunking results: 
+1. Click on the file that completes file parsing to view the chunking results:
 
    _You are taken to the **Chunk** page:_
 
@@ -104,7 +104,7 @@ RAGFlow features visibility and explainability, allowing you to view the chunkin
    ![update chunk](https://raw.githubusercontent.com/infiniflow/ragflow-docs/main/images/add_keyword_question.jpg)
 
 :::caution NOTE
-You can add keywords to a file chunk to increase its ranking for queries containing those keywords. This action increases its keyword weight and can improve its position in search list.  
+You can add keywords to a file chunk to increase its ranking for queries containing those keywords. This action increases its keyword weight and can improve its position in search list.
 :::
 
 4. In Retrieval testing, ask a quick question in **Test text** to double-check if your configurations work:
@@ -132,7 +132,7 @@ As of RAGFlow v0.20.5, the search feature is still in a rudimentary form, suppor
 
 You are allowed to delete a dataset. Hover your mouse over the three dot of the intended dataset card and the **Delete** option appears. Once you delete a dataset, the associated folder under **root/.knowledge** directory is AUTOMATICALLY REMOVED. The consequence is:
 
-- The files uploaded directly to the dataset are gone;  
-- The file references, which you created from within **File Management**, are gone, but the associated files still exist in **File Management**. 
+- The files uploaded directly to the dataset are gone;
+- The file references, which you created from within **File Management**, are gone, but the associated files still exist in **File Management**.
 
 ![delete dataset](https://raw.githubusercontent.com/infiniflow/ragflow-docs/main/images/delete_datasets.jpg)

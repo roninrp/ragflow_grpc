@@ -69,14 +69,11 @@ def check_storage() -> tuple[bool, dict]:
 
 
 def get_es_cluster_stats() -> dict:
-    doc_engine = os.getenv('DOC_ENGINE', 'elasticsearch')
-    if doc_engine != 'elasticsearch':
+    doc_engine = os.getenv("DOC_ENGINE", "elasticsearch")
+    if doc_engine != "elasticsearch":
         raise Exception("Elasticsearch is not in use.")
     try:
-        return {
-            "alive": True,
-            "message": ESConnection().get_cluster_stats()
-        }
+        return {"alive": True, "message": ESConnection().get_cluster_stats()}
     except Exception as e:
         return {
             "alive": False,
@@ -85,14 +82,11 @@ def get_es_cluster_stats() -> dict:
 
 
 def get_infinity_status():
-    doc_engine = os.getenv('DOC_ENGINE', 'elasticsearch')
-    if doc_engine != 'infinity':
+    doc_engine = os.getenv("DOC_ENGINE", "elasticsearch")
+    if doc_engine != "infinity":
         raise Exception("Infinity is not in use.")
     try:
-        return {
-            "alive": True,
-            "message": InfinityConnection().health()
-        }
+        return {"alive": True, "message": InfinityConnection().health()}
     except Exception as e:
         return {
             "alive": False,
@@ -104,12 +98,9 @@ def get_mysql_status():
     try:
         cursor = DB.execute_sql("SHOW PROCESSLIST;")
         res_rows = cursor.fetchall()
-        headers = ['id', 'user', 'host', 'db', 'command', 'time', 'state', 'info']
+        headers = ["id", "user", "host", "db", "command", "time", "state", "info"]
         cursor.close()
-        return {
-            "alive": True,
-            "message": [dict(zip(headers, r)) for r in res_rows]
-        }
+        return {"alive": True, "message": [dict(zip(headers, r)) for r in res_rows]}
     except Exception as e:
         return {
             "alive": False,
@@ -120,11 +111,11 @@ def get_mysql_status():
 def check_minio_alive():
     start_time = timer()
     try:
-        response = requests.get(f'http://{rag_settings.MINIO["host"]}/minio/health/live')
+        response = requests.get(f"http://{rag_settings.MINIO['host']}/minio/health/live")
         if response.status_code == 200:
-            return {'alive': True, "message": f"Confirm elapsed: {(timer() - start_time) * 1000.0:.1f} ms."}
+            return {"alive": True, "message": f"Confirm elapsed: {(timer() - start_time) * 1000.0:.1f} ms."}
         else:
-            return {'alive': False, "message": f"Confirm elapsed: {(timer() - start_time) * 1000.0:.1f} ms."}
+            return {"alive": False, "message": f"Confirm elapsed: {(timer() - start_time) * 1000.0:.1f} ms."}
     except Exception as e:
         return {
             "alive": False,
@@ -134,10 +125,7 @@ def check_minio_alive():
 
 def get_redis_info():
     try:
-        return {
-            "alive": True,
-            "message": REDIS_CONN.info()
-        }
+        return {"alive": True, "message": REDIS_CONN.info()}
     except Exception as e:
         return {
             "alive": False,
@@ -148,11 +136,11 @@ def get_redis_info():
 def check_ragflow_server_alive():
     start_time = timer()
     try:
-        response = requests.get(f'http://{settings.HOST_IP}:{settings.HOST_PORT}/v1/system/ping')
+        response = requests.get(f"http://{settings.HOST_IP}:{settings.HOST_PORT}/v1/system/ping")
         if response.status_code == 200:
-            return {'alive': True, "message": f"Confirm elapsed: {(timer() - start_time) * 1000.0:.1f} ms."}
+            return {"alive": True, "message": f"Confirm elapsed: {(timer() - start_time) * 1000.0:.1f} ms."}
         else:
-            return {'alive': False, "message": f"Confirm elapsed: {(timer() - start_time) * 1000.0:.1f} ms."}
+            return {"alive": False, "message": f"Confirm elapsed: {(timer() - start_time) * 1000.0:.1f} ms."}
     except Exception as e:
         return {
             "alive": False,
@@ -192,9 +180,6 @@ def run_health_checks() -> tuple[dict, bool]:
     except Exception:
         result["storage"] = "nok"
 
-
     all_ok = (result.get("db") == "ok") and (result.get("redis") == "ok") and (result.get("doc_engine") == "ok") and (result.get("storage") == "ok")
     result["status"] = "ok" if all_ok else "nok"
     return result, all_ok
-
-

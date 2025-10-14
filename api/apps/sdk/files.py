@@ -17,7 +17,8 @@ from api.utils.api_utils import get_json_result
 from api.utils.file_utils import filename_type
 from rag.utils.storage_factory import STORAGE_IMPL
 
-@manager.route('/file/upload', methods=['POST']) # noqa: F821
+
+@manager.route("/file/upload", methods=["POST"])  # noqa: F821
 @token_required
 def upload(tenant_id):
     """
@@ -67,13 +68,13 @@ def upload(tenant_id):
         root_folder = FileService.get_root_folder(tenant_id)
         pf_id = root_folder["id"]
 
-    if 'file' not in request.files:
-        return get_json_result(data=False, message='No file part!', code=400)
-    file_objs = request.files.getlist('file')
+    if "file" not in request.files:
+        return get_json_result(data=False, message="No file part!", code=400)
+    file_objs = request.files.getlist("file")
 
     for file_obj in file_objs:
-        if file_obj.filename == '':
-            return get_json_result(data=False, message='No selected file!', code=400)
+        if file_obj.filename == "":
+            return get_json_result(data=False, message="No selected file!", code=400)
 
     file_res = []
 
@@ -84,8 +85,8 @@ def upload(tenant_id):
 
         for file_obj in file_objs:
             # Handle file path
-            full_path = '/' + file_obj.filename
-            file_obj_names = full_path.split('/')
+            full_path = "/" + file_obj.filename
+            file_obj_names = full_path.split("/")
             file_len = len(file_obj_names)
 
             # Get folder path ID
@@ -129,7 +130,7 @@ def upload(tenant_id):
         return server_error_response(e)
 
 
-@manager.route('/file/create', methods=['POST']) # noqa: F821
+@manager.route("/file/create", methods=["POST"])  # noqa: F821
 @token_required
 def create(tenant_id):
     """
@@ -191,23 +192,14 @@ def create(tenant_id):
         else:
             file_type = FileType.VIRTUAL.value
 
-        file = FileService.insert({
-            "id": get_uuid(),
-            "parent_id": pf_id,
-            "tenant_id": tenant_id,
-            "created_by": tenant_id,
-            "name": req["name"],
-            "location": "",
-            "size": 0,
-            "type": file_type
-        })
+        file = FileService.insert({"id": get_uuid(), "parent_id": pf_id, "tenant_id": tenant_id, "created_by": tenant_id, "name": req["name"], "location": "", "size": 0, "type": file_type})
 
         return get_json_result(data=file.to_json())
     except Exception as e:
         return server_error_response(e)
 
 
-@manager.route('/file/list', methods=['GET']) # noqa: F821
+@manager.route("/file/list", methods=["GET"])  # noqa: F821
 @token_required
 def list_files(tenant_id):
     """
@@ -299,7 +291,7 @@ def list_files(tenant_id):
         return server_error_response(e)
 
 
-@manager.route('/file/root_folder', methods=['GET']) # noqa: F821
+@manager.route("/file/root_folder", methods=["GET"])  # noqa: F821
 @token_required
 def get_root_folder(tenant_id):
     """
@@ -335,7 +327,7 @@ def get_root_folder(tenant_id):
         return server_error_response(e)
 
 
-@manager.route('/file/parent_folder', methods=['GET']) # noqa: F821
+@manager.route("/file/parent_folder", methods=["GET"])  # noqa: F821
 @token_required
 def get_parent_folder():
     """
@@ -380,7 +372,7 @@ def get_parent_folder():
         return server_error_response(e)
 
 
-@manager.route('/file/all_parent_folder', methods=['GET']) # noqa: F821
+@manager.route("/file/all_parent_folder", methods=["GET"])  # noqa: F821
 @token_required
 def get_all_parent_folders(tenant_id):
     """
@@ -428,7 +420,7 @@ def get_all_parent_folders(tenant_id):
         return server_error_response(e)
 
 
-@manager.route('/file/rm', methods=['POST']) # noqa: F821
+@manager.route("/file/rm", methods=["POST"])  # noqa: F821
 @token_required
 def rm(tenant_id):
     """
@@ -502,7 +494,7 @@ def rm(tenant_id):
         return server_error_response(e)
 
 
-@manager.route('/file/rename', methods=['POST']) # noqa: F821
+@manager.route("/file/rename", methods=["POST"])  # noqa: F821
 @token_required
 def rename(tenant_id):
     """
@@ -562,9 +554,9 @@ def rename(tenant_id):
         return server_error_response(e)
 
 
-@manager.route('/file/get/<file_id>', methods=['GET']) # noqa: F821
+@manager.route("/file/get/<file_id>", methods=["GET"])  # noqa: F821
 @token_required
-def get(tenant_id,file_id):
+def get(tenant_id, file_id):
     """
     Download a file.
     ---
@@ -602,15 +594,15 @@ def get(tenant_id,file_id):
         ext = re.search(r"\.([^.]+)$", file.name)
         if ext:
             if file.type == FileType.VISUAL.value:
-                response.headers.set('Content-Type', 'image/%s' % ext.group(1))
+                response.headers.set("Content-Type", "image/%s" % ext.group(1))
             else:
-                response.headers.set('Content-Type', 'application/%s' % ext.group(1))
+                response.headers.set("Content-Type", "application/%s" % ext.group(1))
         return response
     except Exception as e:
         return server_error_response(e)
 
 
-@manager.route('/file/mv', methods=['POST']) # noqa: F821
+@manager.route("/file/mv", methods=["POST"])  # noqa: F821
 @token_required
 def move(tenant_id):
     """
@@ -669,7 +661,8 @@ def move(tenant_id):
     except Exception as e:
         return server_error_response(e)
 
-@manager.route('/file/convert', methods=['POST'])  # noqa: F821
+
+@manager.route("/file/convert", methods=["POST"])  # noqa: F821
 @token_required
 def convert(tenant_id):
     req = request.json
@@ -699,38 +692,39 @@ def convert(tenant_id):
                     if not tenant_id:
                         return get_json_result(message="Tenant not found!", code=404)
                     if not DocumentService.remove_document(doc, tenant_id):
-                        return get_json_result(
-                            message="Database error (Document removal)!", code=404)
+                        return get_json_result(message="Database error (Document removal)!", code=404)
                 File2DocumentService.delete_by_file_id(id)
 
                 # insert
                 for kb_id in kb_ids:
                     e, kb = KnowledgebaseService.get_by_id(kb_id)
                     if not e:
-                        return get_json_result(
-                            message="Can't find this knowledgebase!", code=404)
+                        return get_json_result(message="Can't find this knowledgebase!", code=404)
                     e, file = FileService.get_by_id(id)
                     if not e:
-                        return get_json_result(
-                            message="Can't find this file!", code=404)
+                        return get_json_result(message="Can't find this file!", code=404)
 
-                    doc = DocumentService.insert({
-                        "id": get_uuid(),
-                        "kb_id": kb.id,
-                        "parser_id": FileService.get_parser(file.type, file.name, kb.parser_id),
-                        "parser_config": kb.parser_config,
-                        "created_by": tenant_id,
-                        "type": file.type,
-                        "name": file.name,
-                        "suffix": Path(file.name).suffix.lstrip("."),
-                        "location": file.location,
-                        "size": file.size
-                    })
-                    file2document = File2DocumentService.insert({
-                        "id": get_uuid(),
-                        "file_id": id,
-                        "document_id": doc.id,
-                    })
+                    doc = DocumentService.insert(
+                        {
+                            "id": get_uuid(),
+                            "kb_id": kb.id,
+                            "parser_id": FileService.get_parser(file.type, file.name, kb.parser_id),
+                            "parser_config": kb.parser_config,
+                            "created_by": tenant_id,
+                            "type": file.type,
+                            "name": file.name,
+                            "suffix": Path(file.name).suffix.lstrip("."),
+                            "location": file.location,
+                            "size": file.size,
+                        }
+                    )
+                    file2document = File2DocumentService.insert(
+                        {
+                            "id": get_uuid(),
+                            "file_id": id,
+                            "document_id": doc.id,
+                        }
+                    )
 
                     file2documents.append(file2document.to_json())
         return get_json_result(data=file2documents)

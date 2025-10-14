@@ -17,10 +17,10 @@ from agent.component.fillup import UserFillUpParam, UserFillUp
 
 
 class BeginParam(UserFillUpParam):
-
     """
     Define the Begin component parameters.
     """
+
     def __init__(self):
         super().__init__()
         self.mode = "conversational"
@@ -38,7 +38,7 @@ class Begin(UserFillUp):
 
     def _invoke(self, **kwargs):
         for k, v in kwargs.get("inputs", {}).items():
-            if isinstance(v, dict) and v.get("type", "").lower().find("file") >=0:
+            if isinstance(v, dict) and v.get("type", "").lower().find("file") >= 0:
                 if v.get("optional") and v.get("value", None) is None:
                     v = None
                 else:

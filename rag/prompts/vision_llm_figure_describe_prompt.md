@@ -21,4 +21,3 @@ Analyze the image and provide a comprehensive description of its content. Focus 
 - Captions / Annotations: [Text and relevance, if available]
 
 > Ensure high accuracy, clarity, and completeness in your analysis, and include only the information present in the image. Avoid unnecessary statements about missing elements.
-

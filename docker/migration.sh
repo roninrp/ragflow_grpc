@@ -2,7 +2,7 @@
 
 # RAGFlow Data Migration Script
 # Usage: ./migration.sh [backup|restore] [backup_folder]
-# 
+#
 # This script helps you backup and restore RAGFlow Docker volumes
 # including MySQL, MinIO, Redis, and Elasticsearch data.
 
@@ -60,23 +60,23 @@ volume_exists() {
 # Function to check if any containers are using the target volumes
 check_containers_using_volumes() {
     echo "🔍 Checking for running containers that might be using target volumes..."
-    
+
     # Get all running containers
     local running_containers=$(docker ps --format "{{.Names}}")
-    
+
     if [ -z "$running_containers" ]; then
         echo "✅ No running containers found"
         return 0
     fi
-    
+
     # Check each running container for volume usage
     local containers_using_volumes=()
     local volume_usage_details=()
-    
+
     for container in $running_containers; do
         # Get container's mount information
         local mounts=$(docker inspect "$container" --format '{{range .Mounts}}{{.Source}}{{"|"}}{{end}}' 2>/dev/null || echo "")
-        
+
         # Check if any of our target volumes are used by this container
         for volume in "${VOLUMES[@]}"; do
             if echo "$mounts" | grep -q "$volume"; then
@@ -86,7 +86,7 @@ check_containers_using_volumes() {
             fi
         done
     done
-    
+
     # If any containers are using our volumes, show error and exit
     if [ ${#containers_using_volumes[@]} -gt 0 ]; then
         echo ""
@@ -108,7 +108,7 @@ check_containers_using_volumes() {
         echo ""
         exit 1
     fi
-    
+
     echo "✅ No containers are using target volumes, safe to proceed"
     return 0
 }
@@ -127,25 +127,25 @@ confirm_action() {
 # Function to perform backup
 perform_backup() {
     local backup_folder=$1
-    
+
     echo "🚀 Starting RAGFlow data backup..."
     echo "📁 Backup folder: $backup_folder"
     echo ""
-    
+
     # Check if any containers are using the volumes
     check_containers_using_volumes
-    
+
     # Create backup folder if it doesn't exist
     mkdir -p "$backup_folder"
-    
+
     # Backup each volume
     for i in "${!VOLUMES[@]}"; do
         local volume="${VOLUMES[$i]}"
         local backup_file="${BACKUP_FILES[$i]}"
         local step=$((i + 1))
-        
+
         echo "📦 Step $step/4: Backing up $volume..."
-        
+
         if volume_exists "$volume"; then
             docker run --rm \
                 -v "$volume":/source \
@@ -157,10 +157,10 @@ perform_backup() {
         fi
         echo ""
     done
-    
+
     echo "🎉 Backup completed successfully!"
     echo "📍 Backup location: $(pwd)/$backup_folder"
-    
+
     # List backup files with sizes
     echo ""
     echo "📋 Backup files created:"
@@ -175,20 +175,20 @@ perform_backup() {
 # Function to perform restore
 perform_restore() {
     local backup_folder=$1
-    
+
     echo "🔄 Starting RAGFlow data restore..."
     echo "📁 Backup folder: $backup_folder"
     echo ""
-    
+
     # Check if any containers are using the volumes
     check_containers_using_volumes
-    
+
     # Check if backup folder exists
     if [ ! -d "$backup_folder" ]; then
         echo "❌ Error: Backup folder '$backup_folder' does not exist"
         exit 1
     fi
-    
+
     # Check if all backup files exist
     local missing_files=()
     for backup_file in "${BACKUP_FILES[@]}"; do
@@ -196,7 +196,7 @@ perform_restore() {
             missing_files+=("$backup_file")
         fi
     done
-    
+
     if [ ${#missing_files[@]} -gt 0 ]; then
         echo "❌ Error: Missing backup files:"
         for file in "${missing_files[@]}"; do
@@ -205,7 +205,7 @@ perform_restore() {
         echo "Please ensure all backup files are present in '$backup_folder'"
         exit 1
     fi
-    
+
     # Check for existing volumes and warn user
     local existing_volumes=()
     for volume in "${VOLUMES[@]}"; do
@@ -213,7 +213,7 @@ perform_restore() {
             existing_volumes+=("$volume")
         fi
     done
-    
+
     if [ ${#existing_volumes[@]} -gt 0 ]; then
         echo "⚠️  WARNING: The following Docker volumes already exist:"
         for volume in "${existing_volumes[@]}"; do
@@ -224,21 +224,21 @@ perform_restore() {
         echo "💡 Recommendation: Create a backup of your current data first:"
         echo "   $0 backup current_backup_$(date +%Y%m%d_%H%M%S)"
         echo ""
-        
+
         if ! confirm_action "Do you want to continue with the restore operation?"; then
             echo "❌ Restore operation cancelled by user"
             exit 0
         fi
     fi
-    
+
     # Create volumes and restore data
     for i in "${!VOLUMES[@]}"; do
         local volume="${VOLUMES[$i]}"
         local backup_file="${BACKUP_FILES[$i]}"
         local step=$((i + 1))
-        
+
         echo "🔧 Step $step/4: Restoring $volume..."
-        
+
         # Create volume if it doesn't exist
         if ! volume_exists "$volume"; then
             echo "  📋 Creating Docker volume: $volume"
@@ -246,18 +246,18 @@ perform_restore() {
         else
             echo "  📋 Using existing Docker volume: $volume"
         fi
-        
+
         # Restore data
         echo "  📥 Restoring data from $backup_file..."
         docker run --rm \
             -v "$volume":/target \
             -v "$(pwd)/$backup_folder":/backup \
             alpine tar xzf "/backup/$backup_file" -C /target
-        
+
         echo "✅ Successfully restored $volume"
         echo ""
     done
-    
+
     echo "🎉 Restore completed successfully!"
     echo "💡 You can now start your RAGFlow services"
 }
@@ -266,17 +266,17 @@ perform_restore() {
 main() {
     # Check if Docker is available
     check_docker
-    
+
     # Parse command line arguments
     local operation=${1:-}
     local backup_folder=${2:-$DEFAULT_BACKUP_FOLDER}
-    
+
     # Handle help or no arguments
     if [ -z "$operation" ] || [ "$operation" = "help" ] || [ "$operation" = "-h" ] || [ "$operation" = "--help" ]; then
         show_help
         exit 0
     fi
-    
+
     # Validate operation
     case "$operation" in
         backup)

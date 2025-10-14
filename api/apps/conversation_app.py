@@ -217,6 +217,7 @@ def completion():
             dia.llm_setting = chat_model_config
 
         is_embedded = bool(chat_model_id)
+
         def stream():
             nonlocal dia, msg, req, conv
             try:

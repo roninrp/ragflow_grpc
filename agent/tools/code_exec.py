@@ -62,7 +62,7 @@ class CodeExecParam(ToolParamBase):
     """
 
     def __init__(self):
-        self.meta:ToolMeta = {
+        self.meta: ToolMeta = {
             "name": "execute_code",
             "description": """
 This tool has a sandbox that can execute code written in 'Python'/'Javascript'. It recieves a piece of code and return a Json string.
@@ -99,16 +99,12 @@ module.exports = { main };
                     "enum": ["python", "javascript"],
                     "required": True,
                 },
-                "script": {
-                    "type": "string",
-                    "description": "A piece of code in right format. There MUST be main function.",
-                    "required": True
-                }
-            }
+                "script": {"type": "string", "description": "A piece of code in right format. There MUST be main function.", "required": True},
+            },
         }
         super().__init__()
         self.lang = Language.PYTHON.value
-        self.script = "def main(arg1: str, arg2: str) -> dict: return {\"result\": arg1 + arg2}"
+        self.script = 'def main(arg1: str, arg2: str) -> dict: return {"result": arg1 + arg2}'
         self.arguments = {}
         self.outputs = {"result": {"value": "", "type": "string"}}
 
@@ -119,17 +115,14 @@ module.exports = { main };
     def get_input_form(self) -> dict[str, dict]:
         res = {}
         for k, v in self.arguments.items():
-            res[k] = {
-                "type": "line",
-                "name": k
-            }
+            res[k] = {"type": "line", "name": k}
         return res
 
 
 class CodeExec(ToolBase, ABC):
     component_name = "CodeExec"
 
-    @timeout(int(os.environ.get("COMPONENT_EXEC_TIMEOUT", 10*60)))
+    @timeout(int(os.environ.get("COMPONENT_EXEC_TIMEOUT", 10 * 60)))
     def _invoke(self, **kwargs):
         lang = kwargs.get("lang", self._param.lang)
         script = kwargs.get("script", self._param.script)
@@ -140,11 +133,7 @@ class CodeExec(ToolBase, ABC):
                 continue
             arguments[k] = self._canvas.get_variable_value(v) if v else None
 
-        self._execute_code(
-            language=lang,
-            code=script,
-            arguments=arguments
-        )
+        self._execute_code(language=lang, code=script, arguments=arguments)
 
     def _execute_code(self, language: str, code: str, arguments: dict):
         import requests
@@ -156,7 +145,7 @@ class CodeExec(ToolBase, ABC):
             self.set_output("_ERROR", "construct code request error: " + str(e))
 
         try:
-            resp = requests.post(url=f"http://{settings.SANDBOX_HOST}:9385/run", json=code_req, timeout=int(os.environ.get("COMPONENT_EXEC_TIMEOUT", 10*60)))
+            resp = requests.post(url=f"http://{settings.SANDBOX_HOST}:9385/run", json=code_req, timeout=int(os.environ.get("COMPONENT_EXEC_TIMEOUT", 10 * 60)))
             logging.info(f"http://{settings.SANDBOX_HOST}:9385/run,  code_req: {code_req}, resp.status_code {resp.status_code}:")
             if resp.status_code != 200:
                 resp.raise_for_status()

@@ -28,7 +28,7 @@ class DuckDuckGoParam(ToolParamBase):
     """
 
     def __init__(self):
-        self.meta:ToolMeta = {
+        self.meta: ToolMeta = {
             "name": "duckduckgo_search",
             "description": "DuckDuckGo is a search engine focused on privacy. It offers search capabilities for web pages, images, and provides translation services. DuckDuckGo also features a private AI chat interface, providing users with an AI assistant that prioritizes data protection.",
             "parameters": {
@@ -36,7 +36,7 @@ class DuckDuckGoParam(ToolParamBase):
                     "type": "string",
                     "description": "The search keywords to execute with DuckDuckGo. The keywords should be the most important words/terms(includes synonyms) from the original request.",
                     "default": "{sys.query}",
-                    "required": True
+                    "required": True,
                 },
                 "channel": {
                     "type": "string",
@@ -45,7 +45,7 @@ class DuckDuckGoParam(ToolParamBase):
                     "default": "general",
                     "required": False,
                 },
-            }
+            },
         }
         super().__init__()
         self.top_n = 10
@@ -56,18 +56,7 @@ class DuckDuckGoParam(ToolParamBase):
         self.check_valid_value(self.channel, "Web Search or News", ["text", "news"])
 
     def get_input_form(self) -> dict[str, dict]:
-        return {
-            "query": {
-                "name": "Query",
-                "type": "line"
-            },
-            "channel": {
-                "name": "Channel",
-                "type": "options",
-                "value": "general",
-                "options": ["general", "news"]
-            }
-        }
+        return {"query": {"name": "Query", "type": "line"}, "channel": {"name": "Channel", "type": "options", "value": "general", "options": ["general", "news"]}}
 
 
 class DuckDuckGo(ToolBase, ABC):
@@ -80,26 +69,20 @@ class DuckDuckGo(ToolBase, ABC):
             return ""
 
         last_e = ""
-        for _ in range(self._param.max_retries+1):
+        for _ in range(self._param.max_retries + 1):
             try:
                 if kwargs.get("topic", "general") == "general":
                     with DDGS() as ddgs:
                         # {'title': '', 'href': '', 'body': ''}
                         duck_res = ddgs.text(kwargs["query"], max_results=self._param.top_n)
-                        self._retrieve_chunks(duck_res,
-                                              get_title=lambda r: r["title"],
-                                              get_url=lambda r: r.get("href", r.get("url")),
-                                              get_content=lambda r: r["body"])
+                        self._retrieve_chunks(duck_res, get_title=lambda r: r["title"], get_url=lambda r: r.get("href", r.get("url")), get_content=lambda r: r["body"])
                         self.set_output("json", duck_res)
                         return self.output("formalized_content")
                 else:
                     with DDGS() as ddgs:
                         # {'date': '', 'title': '', 'body': '', 'url': '', 'image': '', 'source': ''}
                         duck_res = ddgs.news(kwargs["query"], max_results=self._param.top_n)
-                        self._retrieve_chunks(duck_res,
-                                              get_title=lambda r: r["title"],
-                                              get_url=lambda r: r.get("href", r.get("url")),
-                                              get_content=lambda r: r["body"])
+                        self._retrieve_chunks(duck_res, get_title=lambda r: r["title"], get_url=lambda r: r.get("href", r.get("url")), get_content=lambda r: r["body"])
                         self.set_output("json", duck_res)
                         return self.output("formalized_content")
             except Exception as e:

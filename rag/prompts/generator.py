@@ -27,8 +27,8 @@ from rag.settings import TAG_FLD
 from rag.utils import encoder, num_tokens_from_string
 
 
-STOP_TOKEN="<|STOP|>"
-COMPLETE_TASK="complete_task"
+STOP_TOKEN = "<|STOP|>"
+COMPLETE_TASK = "complete_task"
 
 
 def get_value(d, k1, k2):
@@ -36,7 +36,6 @@ def get_value(d, k1, k2):
 
 
 def chunks_format(reference):
-
     return [
         {
             "id": get_value(chunk, "chunk_id", "id"),
@@ -124,7 +123,7 @@ def kb_prompt(kbinfos, max_tokens, hash_id=False):
     for i, ck in enumerate(kbinfos["chunks"][:chunks_num]):
         cnt = "\nID: {}".format(i if not hash_id else hash_str2int(get_value(ck, "id", "chunk_id"), 100))
         cnt += draw_node("Title", get_value(ck, "docnm_kwd", "document_name"))
-        cnt += draw_node("URL", ck['url'])  if "url" in ck else ""
+        cnt += draw_node("URL", ck["url"]) if "url" in ck else ""
         for k, v in docs.get(get_value(ck, "doc_id", "document_id"), {}).items():
             cnt += draw_node(k, v)
         cnt += "\n└── Content:\n"
@@ -157,7 +156,7 @@ ASK_SUMMARY = load_prompt("ask_summary")
 PROMPT_JINJA_ENV = jinja2.Environment(autoescape=False, trim_blocks=True, lstrip_blocks=True)
 
 
-def citation_prompt(user_defined_prompts: dict={}) -> str:
+def citation_prompt(user_defined_prompts: dict = {}) -> str:
     template = PROMPT_JINJA_ENV.from_string(user_defined_prompts.get("citation_guidelines", CITATION_PROMPT_TEMPLATE))
     return template.render()
 
@@ -314,17 +313,13 @@ def tool_schema(tools_description: list[dict], complete_task=False):
             "function": {
                 "name": COMPLETE_TASK,
                 "description": "When you have the final answer and are ready to complete the task, call this function with your answer",
-                "parameters": {
-                    "type": "object",
-                    "properties": {"answer":{"type":"string", "description": "The final answer to the user's question"}},
-                    "required": ["answer"]
-                }
-            }
+                "parameters": {"type": "object", "properties": {"answer": {"type": "string", "description": "The final answer to the user's question"}}, "required": ["answer"]},
+            },
         }
     for tool in tools_description:
         desc[tool["function"]["name"]] = tool
 
-    return "\n\n".join([f"## {i+1}. {fnm}\n{json.dumps(des, ensure_ascii=False, indent=4)}" for i, (fnm, des) in enumerate(desc.items())])
+    return "\n\n".join([f"## {i + 1}. {fnm}\n{json.dumps(des, ensure_ascii=False, indent=4)}" for i, (fnm, des) in enumerate(desc.items())])
 
 
 def form_history(history, limit=-6):
@@ -333,13 +328,13 @@ def form_history(history, limit=-6):
         if h["role"] == "system":
             continue
         role = "USER"
-        if h["role"].upper()!= role:
+        if h["role"].upper() != role:
             role = "AGENT"
-        context += f"\n{role}: {h['content'][:2048] + ('...' if len(h['content'])>2048 else '')}"
+        context += f"\n{role}: {h['content'][:2048] + ('...' if len(h['content']) > 2048 else '')}"
     return context
 
 
-def analyze_task(chat_mdl, prompt, task_name, tools_description: list[dict], user_defined_prompts: dict={}):
+def analyze_task(chat_mdl, prompt, task_name, tools_description: list[dict], user_defined_prompts: dict = {}):
     tools_desc = tool_schema(tools_description)
     context = ""
 
@@ -357,7 +352,7 @@ def analyze_task(chat_mdl, prompt, task_name, tools_description: list[dict], use
     return kwd
 
 
-def next_step(chat_mdl, history:list, tools_description: list[dict], task_desc, user_defined_prompts: dict={}):
+def next_step(chat_mdl, history: list, tools_description: list[dict], task_desc, user_defined_prompts: dict = {}):
     if not tools_description:
         return ""
     desc = tool_schema(tools_description)
@@ -368,14 +363,13 @@ def next_step(chat_mdl, history:list, tools_description: list[dict], task_desc, 
         hist[-1]["content"] += user_prompt
     else:
         hist.append({"role": "user", "content": user_prompt})
-    json_str = chat_mdl.chat(template.render(task_analysis=task_desc, desc=desc, today=datetime.datetime.now().strftime("%Y-%m-%d")),
-                             hist[1:], stop=["<|stop|>"])
+    json_str = chat_mdl.chat(template.render(task_analysis=task_desc, desc=desc, today=datetime.datetime.now().strftime("%Y-%m-%d")), hist[1:], stop=["<|stop|>"])
     tk_cnt = num_tokens_from_string(json_str)
     json_str = re.sub(r"^.*</think>", "", json_str, flags=re.DOTALL)
     return json_str, tk_cnt
 
 
-def reflect(chat_mdl, history: list[dict], tool_call_res: list[Tuple], user_defined_prompts: dict={}):
+def reflect(chat_mdl, history: list[dict], tool_call_res: list[Tuple], user_defined_prompts: dict = {}):
     tool_calls = [{"name": p[0], "result": p[1]} for p in tool_call_res]
     goal = history[1]["content"]
     template = PROMPT_JINJA_ENV.from_string(user_defined_prompts.get("reflection", REFLECT))
@@ -398,35 +392,29 @@ def reflect(chat_mdl, history: list[dict], tool_call_res: list[Tuple], user_defi
 
 
 def form_message(system_prompt, user_prompt):
-    return [{"role": "system", "content": system_prompt},{"role": "user", "content": user_prompt}]
+    return [{"role": "system", "content": system_prompt}, {"role": "user", "content": user_prompt}]
 
 
-def tool_call_summary(chat_mdl, name: str, params: dict, result: str, user_defined_prompts: dict={}) -> str:
+def tool_call_summary(chat_mdl, name: str, params: dict, result: str, user_defined_prompts: dict = {}) -> str:
     template = PROMPT_JINJA_ENV.from_string(SUMMARY4MEMORY)
-    system_prompt = template.render(name=name,
-                           params=json.dumps(params, ensure_ascii=False, indent=2),
-                           result=result)
+    system_prompt = template.render(name=name, params=json.dumps(params, ensure_ascii=False, indent=2), result=result)
     user_prompt = "→ Summary: "
     _, msg = message_fit_in(form_message(system_prompt, user_prompt), chat_mdl.max_length)
     ans = chat_mdl.chat(msg[0]["content"], msg[1:])
     return re.sub(r"^.*</think>", "", ans, flags=re.DOTALL)
 
 
-def rank_memories(chat_mdl, goal:str, sub_goal:str, tool_call_summaries: list[str], user_defined_prompts: dict={}):
+def rank_memories(chat_mdl, goal: str, sub_goal: str, tool_call_summaries: list[str], user_defined_prompts: dict = {}):
     template = PROMPT_JINJA_ENV.from_string(RANK_MEMORY)
-    system_prompt = template.render(goal=goal, sub_goal=sub_goal, results=[{"i": i, "content": s} for i,s in enumerate(tool_call_summaries)])
+    system_prompt = template.render(goal=goal, sub_goal=sub_goal, results=[{"i": i, "content": s} for i, s in enumerate(tool_call_summaries)])
     user_prompt = " → rank: "
     _, msg = message_fit_in(form_message(system_prompt, user_prompt), chat_mdl.max_length)
     ans = chat_mdl.chat(msg[0]["content"], msg[1:], stop="<|stop|>")
     return re.sub(r"^.*</think>", "", ans, flags=re.DOTALL)
 
 
-def gen_meta_filter(chat_mdl, meta_data:dict, query: str) -> list:
-    sys_prompt = PROMPT_JINJA_ENV.from_string(META_FILTER).render(
-        current_date=datetime.datetime.today().strftime('%Y-%m-%d'),
-        metadata_keys=json.dumps(meta_data),
-        user_question=query
-    )
+def gen_meta_filter(chat_mdl, meta_data: dict, query: str) -> list:
+    sys_prompt = PROMPT_JINJA_ENV.from_string(META_FILTER).render(current_date=datetime.datetime.today().strftime("%Y-%m-%d"), metadata_keys=json.dumps(meta_data), user_question=query)
     user_prompt = "Generate filters:"
     ans = chat_mdl.chat(sys_prompt, [{"role": "user", "content": user_prompt}])
     ans = re.sub(r"(^.*</think>|```json\n|```\n*$)", "", ans, flags=re.DOTALL)

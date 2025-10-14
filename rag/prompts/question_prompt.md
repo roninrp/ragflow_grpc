@@ -16,4 +16,3 @@ Propose {{ topn }} questions about a given piece of text content.
 
 ## Text Content
 {{ content }}
-

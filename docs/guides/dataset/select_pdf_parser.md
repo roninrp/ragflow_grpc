@@ -50,4 +50,3 @@ Use a visual model to extract data if your PDFs contain formatted or image-based
 ### Can I select a visual model to parse my DOCX files?
 
 No, you cannot. This dropdown menu is for PDFs only. To use this feature, convert your DOCX files to PDF first.
-

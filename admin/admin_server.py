@@ -1,4 +1,3 @@
-
 import os
 import signal
 import logging
@@ -15,15 +14,17 @@ from config import load_configurations, SERVICE_CONFIGS
 
 stop_event = threading.Event()
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     init_root_logger("admin_service")
-    logging.info(r"""
-        ____  ___   ______________                 ___       __          _     
-       / __ \/   | / ____/ ____/ /___ _      __   /   | ____/ /___ ___  (_)___ 
+    logging.info(
+        r"""
+        ____  ___   ______________                 ___       __          _
+       / __ \/   | / ____/ ____/ /___ _      __   /   | ____/ /___ ___  (_)___
       / /_/ / /| |/ / __/ /_  / / __ \ | /| / /  / /| |/ __  / __ `__ \/ / __ \
      / _, _/ ___ / /_/ / __/ / / /_/ / |/ |/ /  / ___ / /_/ / / / / / / / / / /
-    /_/ |_/_/  |_\____/_/   /_/\____/|__/|__/  /_/  |_\__,_/_/ /_/ /_/_/_/ /_/ 
-    """)
+    /_/ |_/_/  |_\____/_/   /_/\____/|__/|__/  /_/  |_\__,_/_/ /_/ /_/_/_/ /_/
+    """
+    )
 
     app = Flask(__name__)
     app.register_blueprint(admin_bp)

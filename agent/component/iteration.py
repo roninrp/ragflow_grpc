@@ -27,12 +27,7 @@ class IterationParam(ComponentParamBase):
         self.items_ref = ""
 
     def get_input_form(self) -> dict[str, dict]:
-        return {
-            "items": {
-                "type": "json",
-                "name": "Items"
-            }
-        }
+        return {"items": {"type": "json", "name": "Items"}}
 
     def check(self):
         return True
@@ -51,10 +46,7 @@ class Iteration(ComponentBase, ABC):
     def _invoke(self, **kwargs):
         arr = self._canvas.get_variable_value(self._param.items_ref)
         if not isinstance(arr, list):
-            self.set_output("_ERROR", self._param.items_ref + " must be an array, but its type is "+str(type(arr)))
+            self.set_output("_ERROR", self._param.items_ref + " must be an array, but its type is " + str(type(arr)))
 
     def thoughts(self) -> str:
         return "Need to process {} items.".format(len(self._canvas.get_variable_value(self._param.items_ref)))
-
-
-

@@ -403,6 +403,7 @@ class RAGFlowPdfParser:
 
     def _naive_vertical_merge(self, zoomin=3):
         import math
+
         bxs = Recognizer.sort_Y_firstly(self.boxes, np.median(self.mean_height) / 3)
 
         column_width = np.median([b["x1"] - b["x0"] for b in self.boxes])

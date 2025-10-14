@@ -99,7 +99,7 @@ def login():
 
     user = UserService.query_user(email, password)
 
-    if user and hasattr(user, 'is_active') and user.is_active == "0":
+    if user and hasattr(user, "is_active") and user.is_active == "0":
         return get_json_result(
             data=False,
             code=settings.RetCode.FORBIDDEN,
@@ -234,7 +234,7 @@ def oauth_callback(channel):
         # User exists, try to log in
         user = users[0]
         user.access_token = get_uuid()
-        if user and hasattr(user, 'is_active') and user.is_active == "0":
+        if user and hasattr(user, "is_active") and user.is_active == "0":
             return redirect("/?error=user_inactive")
 
         login_user(user)
@@ -327,7 +327,7 @@ def github_callback():
     # User has already registered, try to log in
     user = users[0]
     user.access_token = get_uuid()
-    if user and hasattr(user, 'is_active') and user.is_active == "0":
+    if user and hasattr(user, "is_active") and user.is_active == "0":
         return redirect("/?error=user_inactive")
     login_user(user)
     user.save()
@@ -430,7 +430,7 @@ def feishu_callback():
 
     # User has already registered, try to log in
     user = users[0]
-    if user and hasattr(user, 'is_active') and user.is_active == "0":
+    if user and hasattr(user, "is_active") and user.is_active == "0":
         return redirect("/?error=user_inactive")
     user.access_token = get_uuid()
     login_user(user)

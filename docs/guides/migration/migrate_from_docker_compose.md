@@ -99,10 +99,3 @@ docker-compose -f docker/docker-compose.yml up -d
 ```
 
 Your RAGFlow instance is now running with all the data from your original machine.
-
-
-
-
-
-
-

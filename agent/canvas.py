@@ -30,46 +30,47 @@ from api.utils import get_uuid, hash_str2int
 from rag.prompts.generator import chunks_format
 from rag.utils.redis_conn import REDIS_CONN
 
+
 class Graph:
     """
-        dsl = {
-            "components": {
-                "begin": {
-                    "obj":{
-                        "component_name": "Begin",
-                        "params": {},
-                    },
-                    "downstream": ["answer_0"],
-                    "upstream": [],
+    dsl = {
+        "components": {
+            "begin": {
+                "obj":{
+                    "component_name": "Begin",
+                    "params": {},
                 },
-                "retrieval_0": {
-                    "obj": {
-                        "component_name": "Retrieval",
-                        "params": {}
-                    },
-                    "downstream": ["generate_0"],
-                    "upstream": ["answer_0"],
-                },
-                "generate_0": {
-                    "obj": {
-                        "component_name": "Generate",
-                        "params": {}
-                    },
-                    "downstream": ["answer_0"],
-                    "upstream": ["retrieval_0"],
-                }
+                "downstream": ["answer_0"],
+                "upstream": [],
             },
-            "history": [],
-            "path": ["begin"],
-            "retrieval": {"chunks": [], "doc_aggs": []},
-            "globals": {
-                "sys.query": "",
-                "sys.user_id": tenant_id,
-                "sys.conversation_turns": 0,
-                "sys.files": []
+            "retrieval_0": {
+                "obj": {
+                    "component_name": "Retrieval",
+                    "params": {}
+                },
+                "downstream": ["generate_0"],
+                "upstream": ["answer_0"],
+            },
+            "generate_0": {
+                "obj": {
+                    "component_name": "Generate",
+                    "params": {}
+                },
+                "downstream": ["answer_0"],
+                "upstream": ["retrieval_0"],
             }
+        },
+        "history": [],
+        "path": ["begin"],
+        "retrieval": {"chunks": [], "doc_aggs": []},
+        "globals": {
+            "sys.query": "",
+            "sys.user_id": tenant_id,
+            "sys.conversation_turns": 0,
+            "sys.files": []
         }
-        """
+    }
+    """
 
     def __init__(self, dsl: str, tenant_id=None, task_id=None):
         self.path = []
@@ -102,9 +103,7 @@ class Graph:
     def __str__(self):
         self.dsl["path"] = self.path
         self.dsl["task_id"] = self.task_id
-        dsl = {
-            "components": {}
-        }
+        dsl = {"components": {}}
         for k in self.dsl.keys():
             if k in ["components"]:
                 continue
@@ -155,14 +154,8 @@ class Graph:
 
 
 class Canvas(Graph):
-
     def __init__(self, dsl: str, tenant_id=None, task_id=None):
-        self.globals = {
-            "sys.query": "",
-            "sys.user_id": tenant_id,
-            "sys.conversation_turns": 0,
-            "sys.files": []
-        }
+        self.globals = {"sys.query": "", "sys.user_id": tenant_id, "sys.conversation_turns": 0, "sys.files": []}
         super().__init__(dsl, tenant_id, task_id)
 
     def load(self):
@@ -171,13 +164,8 @@ class Canvas(Graph):
         if "globals" in self.dsl:
             self.globals = self.dsl["globals"]
         else:
-            self.globals = {
-            "sys.query": "",
-            "sys.user_id": "",
-            "sys.conversation_turns": 0,
-            "sys.files": []
-        }
-            
+            self.globals = {"sys.query": "", "sys.user_id": "", "sys.conversation_turns": 0, "sys.files": []}
+
         self.retrieval = self.dsl["retrieval"]
         self.memory = self.dsl.get("memory", [])
 
@@ -222,7 +210,7 @@ class Canvas(Graph):
                     self.globals[f"sys.{k}"] = self.get_files(kwargs[k])
                 else:
                     self.globals[f"sys.{k}"] = kwargs[k]
-        if not self.globals["sys.conversation_turns"] :
+        if not self.globals["sys.conversation_turns"]:
             self.globals["sys.conversation_turns"] = 0
         self.globals["sys.conversation_turns"] += 1
 
@@ -230,11 +218,11 @@ class Canvas(Graph):
             nonlocal created_at
             return {
                 "event": event,
-                #"conversation_id": "f3cc152b-24b0-4258-a1a1-7d5e9fc8a115",
+                # "conversation_id": "f3cc152b-24b0-4258-a1a1-7d5e9fc8a115",
                 "message_id": self.message_id,
                 "created_at": created_at,
                 "task_id": self.task_id,
-                "data": dt
+                "data": dt,
             }
 
         if not self.path or self.path[-1].lower().find("userfillup") < 0:
@@ -257,16 +245,19 @@ class Canvas(Graph):
                     t.result()
 
         def _node_finished(cpn_obj):
-            return decorate("node_finished",{
-                           "inputs": cpn_obj.get_input_values(),
-                           "outputs": cpn_obj.output(),
-                           "component_id": cpn_obj._id,
-                           "component_name": self.get_component_name(cpn_obj._id),
-                           "component_type": self.get_component_type(cpn_obj._id),
-                           "error": cpn_obj.error(),
-                           "elapsed_time": time.perf_counter() - cpn_obj.output("_created_time"),
-                           "created_at": cpn_obj.output("_created_time"),
-                       })
+            return decorate(
+                "node_finished",
+                {
+                    "inputs": cpn_obj.get_input_values(),
+                    "outputs": cpn_obj.output(),
+                    "component_id": cpn_obj._id,
+                    "component_name": self.get_component_name(cpn_obj._id),
+                    "component_type": self.get_component_type(cpn_obj._id),
+                    "error": cpn_obj.error(),
+                    "elapsed_time": time.perf_counter() - cpn_obj.output("_created_time"),
+                    "created_at": cpn_obj.output("_created_time"),
+                },
+            )
 
         self.error = ""
         idx = len(self.path) - 1
@@ -274,13 +265,17 @@ class Canvas(Graph):
         while idx < len(self.path):
             to = len(self.path)
             for i in range(idx, to):
-                yield decorate("node_started", {
-                    "inputs": None, "created_at": int(time.time()),
-                    "component_id": self.path[i],
-                    "component_name": self.get_component_name(self.path[i]),
-                    "component_type": self.get_component_type(self.path[i]),
-                    "thoughts": self.get_component_thoughts(self.path[i])
-                })
+                yield decorate(
+                    "node_started",
+                    {
+                        "inputs": None,
+                        "created_at": int(time.time()),
+                        "component_id": self.path[i],
+                        "component_name": self.get_component_name(self.path[i]),
+                        "component_type": self.get_component_type(self.path[i]),
+                        "thoughts": self.get_component_thoughts(self.path[i]),
+                    },
+                )
             _run_batch(idx, to)
 
             # post processing of components invocation
@@ -304,7 +299,7 @@ class Canvas(Graph):
                         cite = re.search(r"\[ID:[ 0-9]+\]", _m)
                     else:
                         yield decorate("message", {"content": cpn_obj.output("content")})
-                        cite = re.search(r"\[ID:[ 0-9]+\]",  cpn_obj.output("content"))
+                        cite = re.search(r"\[ID:[ 0-9]+\]", cpn_obj.output("content"))
                     yield decorate("message_end", {"reference": self.get_reference() if cite else None})
 
                     while partials:
@@ -386,13 +381,15 @@ class Canvas(Graph):
 
         self.path = self.path[:idx]
         if not self.error:
-            yield decorate("workflow_finished",
-                       {
-                           "inputs": kwargs.get("inputs"),
-                           "outputs": self.get_component_obj(self.path[-1]).output(),
-                           "elapsed_time": time.perf_counter() - st,
-                           "created_at": st,
-                       })
+            yield decorate(
+                "workflow_finished",
+                {
+                    "inputs": kwargs.get("inputs"),
+                    "outputs": self.get_component_obj(self.path[-1]).output(),
+                    "elapsed_time": time.perf_counter() - st,
+                    "created_at": st,
+                },
+            )
             self.history.append(("assistant", self.get_component_obj(self.path[-1]).output()))
 
     def is_reff(self, exp: str) -> bool:
@@ -420,7 +417,7 @@ class Canvas(Graph):
         convs = []
         if window_size <= 0:
             return convs
-        for role, obj in self.history[window_size * -2:]:
+        for role, obj in self.history[window_size * -2 :]:
             if isinstance(obj, dict):
                 convs.append({"role": role, "content": obj.get("content", "")})
             else:
@@ -447,14 +444,15 @@ class Canvas(Graph):
 
     def get_files(self, files: Union[None, list[dict]]) -> list[str]:
         if not files:
-            return  []
+            return []
+
         def image_to_base64(file):
-            return "data:{};base64,{}".format(file["mime_type"],
-                                        base64.b64encode(FileService.get_blob(file["created_by"], file["id"])).decode("utf-8"))
+            return "data:{};base64,{}".format(file["mime_type"], base64.b64encode(FileService.get_blob(file["created_by"], file["id"])).decode("utf-8"))
+
         exe = ThreadPoolExecutor(max_workers=5)
         threads = []
         for file in files:
-            if file["mime_type"].find("image") >=0:
+            if file["mime_type"].find("image") >= 0:
                 threads.append(exe.submit(image_to_base64, file))
                 continue
             threads.append(exe.submit(FileService.parse, file["name"], FileService.get_blob(file["created_by"], file["id"]), True, file["created_by"]))
@@ -463,7 +461,7 @@ class Canvas(Graph):
     def tool_use_callback(self, agent_id: str, func_name: str, params: dict, result: Any, elapsed_time=None):
         agent_ids = agent_id.split("-->")
         agent_name = self.get_component_name(agent_ids[0])
-        path = agent_name if len(agent_ids) < 2 else agent_name+"-->"+"-->".join(agent_ids[1:])
+        path = agent_name if len(agent_ids) < 2 else agent_name + "-->" + "-->".join(agent_ids[1:])
         try:
             bin = REDIS_CONN.get(f"{self.task_id}-{self.message_id}-logs")
             if bin:
@@ -471,16 +469,10 @@ class Canvas(Graph):
                 if obj[-1]["component_id"] == agent_ids[0]:
                     obj[-1]["trace"].append({"path": path, "tool_name": func_name, "arguments": params, "result": result, "elapsed_time": elapsed_time})
                 else:
-                    obj.append({
-                    "component_id": agent_ids[0],
-                    "trace": [{"path": path, "tool_name": func_name, "arguments": params, "result": result, "elapsed_time": elapsed_time}]
-                })
+                    obj.append({"component_id": agent_ids[0], "trace": [{"path": path, "tool_name": func_name, "arguments": params, "result": result, "elapsed_time": elapsed_time}]})
             else:
-                obj = [{
-                    "component_id": agent_ids[0],
-                    "trace": [{"path": path, "tool_name": func_name, "arguments": params, "result": result, "elapsed_time": elapsed_time}]
-                }]
-            REDIS_CONN.set_obj(f"{self.task_id}-{self.message_id}-logs", obj, 60*10)
+                obj = [{"component_id": agent_ids[0], "trace": [{"path": path, "tool_name": func_name, "arguments": params, "result": result, "elapsed_time": elapsed_time}]}]
+            REDIS_CONN.set_obj(f"{self.task_id}-{self.message_id}-logs", obj, 60 * 10)
         except Exception as e:
             logging.exception(e)
 
@@ -504,7 +496,7 @@ class Canvas(Graph):
             return {"chunks": {}, "doc_aggs": {}}
         return self.retrieval[-1]
 
-    def add_memory(self, user:str, assist:str, summ: str):
+    def add_memory(self, user: str, assist: str, summ: str):
         self.memory.append((user, assist, summ))
 
     def get_memory(self) -> list[Tuple]:
@@ -512,4 +504,3 @@ class Canvas(Graph):
 
     def get_component_thoughts(self, cpn_id) -> str:
         return self.components.get(cpn_id)["obj"].thoughts()
-

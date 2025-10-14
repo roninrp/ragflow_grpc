@@ -31,17 +31,10 @@ class ExeSQLParam(ToolParamBase):
     """
 
     def __init__(self):
-        self.meta:ToolMeta = {
+        self.meta: ToolMeta = {
             "name": "execute_sql",
             "description": "This is a tool that can execute SQL.",
-            "parameters": {
-                "sql": {
-                    "type": "string",
-                    "description": "The SQL needs to be executed.",
-                    "default": "{sys.query}",
-                    "required": True
-                }
-            }
+            "parameters": {"sql": {"type": "string", "description": "The SQL needs to be executed.", "default": "{sys.query}", "required": True}},
         }
         super().__init__()
         self.db_type = "mysql"
@@ -53,7 +46,7 @@ class ExeSQLParam(ToolParamBase):
         self.max_records = 1024
 
     def check(self):
-        self.check_valid_value(self.db_type, "Choose DB type", ['mysql', 'postgres', 'mariadb', 'mssql', 'IBM DB2'])
+        self.check_valid_value(self.db_type, "Choose DB type", ["mysql", "postgres", "mariadb", "mssql", "IBM DB2"])
         self.check_empty(self.database, "Database name")
         self.check_empty(self.username, "database username")
         self.check_empty(self.host, "IP Address")
@@ -67,12 +60,7 @@ class ExeSQLParam(ToolParamBase):
                 raise ValueError("For the security reason, it dose not support database named rag_flow.")
 
     def get_input_form(self) -> dict[str, dict]:
-        return {
-            "sql": {
-                "name": "SQL",
-                "type": "line"
-            }
-        }
+        return {"sql": {"name": "SQL", "type": "line"}}
 
 
 class ExeSQL(ToolBase, ABC):
@@ -80,9 +68,9 @@ class ExeSQL(ToolBase, ABC):
 
     @timeout(int(os.environ.get("COMPONENT_EXEC_TIMEOUT", 60)))
     def _invoke(self, **kwargs):
-
         def convert_decimals(obj):
             from decimal import Decimal
+
             if isinstance(obj, Decimal):
                 return float(obj)  # 或 str(obj)
             elif isinstance(obj, dict):
@@ -109,30 +97,22 @@ class ExeSQL(ToolBase, ABC):
 
         sqls = sql.split(";")
         if self._param.db_type in ["mysql", "mariadb"]:
-            db = pymysql.connect(db=self._param.database, user=self._param.username, host=self._param.host,
-                                 port=self._param.port, password=self._param.password)
-        elif self._param.db_type == 'postgres':
-            db = psycopg2.connect(dbname=self._param.database, user=self._param.username, host=self._param.host,
-                                  port=self._param.port, password=self._param.password)
-        elif self._param.db_type == 'mssql':
+            db = pymysql.connect(db=self._param.database, user=self._param.username, host=self._param.host, port=self._param.port, password=self._param.password)
+        elif self._param.db_type == "postgres":
+            db = psycopg2.connect(dbname=self._param.database, user=self._param.username, host=self._param.host, port=self._param.port, password=self._param.password)
+        elif self._param.db_type == "mssql":
             conn_str = (
-                    r'DRIVER={ODBC Driver 17 for SQL Server};'
-                    r'SERVER=' + self._param.host + ',' + str(self._param.port) + ';'
-                    r'DATABASE=' + self._param.database + ';'
-                    r'UID=' + self._param.username + ';'
-                    r'PWD=' + self._param.password
+                r"DRIVER={ODBC Driver 17 for SQL Server};"
+                r"SERVER=" + self._param.host + "," + str(self._param.port) + ";"
+                r"DATABASE=" + self._param.database + ";"
+                r"UID=" + self._param.username + ";"
+                r"PWD=" + self._param.password
             )
             db = pyodbc.connect(conn_str)
-        elif self._param.db_type == 'IBM DB2':
+        elif self._param.db_type == "IBM DB2":
             import ibm_db
-            conn_str = (
-                f"DATABASE={self._param.database};"
-                f"HOSTNAME={self._param.host};"
-                f"PORT={self._param.port};"
-                f"PROTOCOL=TCPIP;"
-                f"UID={self._param.username};"
-                f"PWD={self._param.password};"
-            )
+
+            conn_str = f"DATABASE={self._param.database};HOSTNAME={self._param.host};PORT={self._param.port};PROTOCOL=TCPIP;UID={self._param.username};PWD={self._param.password};"
             try:
                 conn = ibm_db.connect(conn_str, "", "")
             except Exception as e:
@@ -180,7 +160,7 @@ class ExeSQL(ToolBase, ABC):
         sql_res = []
         formalized_content = []
         for single_sql in sqls:
-            single_sql = single_sql.replace('```','')
+            single_sql = single_sql.replace("```", "")
             if not single_sql:
                 continue
             single_sql = re.sub(r"\[ID:[0-9]+\]", "", single_sql)
@@ -188,20 +168,19 @@ class ExeSQL(ToolBase, ABC):
             if cursor.rowcount == 0:
                 sql_res.append({"content": "No record in the database!"})
                 break
-            if self._param.db_type == 'mssql':
-                single_res = pd.DataFrame.from_records(cursor.fetchmany(self._param.max_records),
-                                                       columns=[desc[0] for desc in cursor.description])
+            if self._param.db_type == "mssql":
+                single_res = pd.DataFrame.from_records(cursor.fetchmany(self._param.max_records), columns=[desc[0] for desc in cursor.description])
             else:
                 single_res = pd.DataFrame([i for i in cursor.fetchmany(self._param.max_records)])
                 single_res.columns = [i[0] for i in cursor.description]
 
             for col in single_res.columns:
                 if pd.api.types.is_datetime64_any_dtype(single_res[col]):
-                    single_res[col] = single_res[col].dt.strftime('%Y-%m-%d')
+                    single_res[col] = single_res[col].dt.strftime("%Y-%m-%d")
 
             single_res = single_res.where(pd.notnull(single_res), None)
 
-            sql_res.append(convert_decimals(single_res.to_dict(orient='records')))
+            sql_res.append(convert_decimals(single_res.to_dict(orient="records")))
             formalized_content.append(single_res.to_markdown(index=False, floatfmt=".6f"))
 
         self.set_output("json", sql_res)

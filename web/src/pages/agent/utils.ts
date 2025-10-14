@@ -466,7 +466,7 @@ export function convertToObjectArray(list: Array<string | number | boolean>) {
 
 /**
    * convert the following object into a list
-   * 
+   *
    * {
       "product_related": {
       "description": "The question is about product usage, appearance and how it works.",

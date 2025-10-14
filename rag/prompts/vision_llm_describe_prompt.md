@@ -20,4 +20,3 @@ At the end of the transcription, add the page divider: `--- Page {{ page }} ---`
 {% endif %}
 
 > If you do not detect valid content in the image, return an empty string.
-

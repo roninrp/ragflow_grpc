@@ -19,7 +19,6 @@ from crawl4ai import AsyncWebCrawler
 from agent.tools.base import ToolParamBase, ToolBase
 
 
-
 class CrawlerParam(ToolParamBase):
     """
     Define the Crawler component parameters.
@@ -29,9 +28,9 @@ class CrawlerParam(ToolParamBase):
         super().__init__()
         self.proxy = None
         self.extract_type = "markdown"
-    
+
     def check(self):
-        self.check_valid_value(self.extract_type, "Type of content from the crawler", ['html', 'markdown', 'content'])
+        self.check_valid_value(self.extract_type, "Type of content from the crawler", ["html", "markdown", "content"])
 
 
 class Crawler(ToolBase, ABC):
@@ -39,6 +38,7 @@ class Crawler(ToolBase, ABC):
 
     def _run(self, history, **kwargs):
         from api.utils.web_utils import is_valid_url
+
         ans = self.get_input()
         ans = " - ".join(ans["content"]) if "content" in ans else ""
         if not is_valid_url(ans):
@@ -47,22 +47,19 @@ class Crawler(ToolBase, ABC):
             result = asyncio.run(self.get_web(ans))
 
             return Crawler.be_output(result)
-            
+
         except Exception as e:
             return Crawler.be_output(f"An unexpected error occurred: {str(e)}")
 
     async def get_web(self, url):
         proxy = self._param.proxy if self._param.proxy else None
         async with AsyncWebCrawler(verbose=True, proxy=proxy) as crawler:
-            result = await crawler.arun(
-                url=url,
-                bypass_cache=True
-            )
-            
-            if self._param.extract_type == 'html':
+            result = await crawler.arun(url=url, bypass_cache=True)
+
+            if self._param.extract_type == "html":
                 return result.cleaned_html
-            elif self._param.extract_type == 'markdown':
+            elif self._param.extract_type == "markdown":
                 return result.markdown
-            elif self._param.extract_type == 'content':
+            elif self._param.extract_type == "content":
                 return result.extracted_content
             return result.markdown

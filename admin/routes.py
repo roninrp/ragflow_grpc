@@ -5,10 +5,10 @@ from responses import success_response, error_response
 from services import UserMgr, ServiceMgr, UserServiceMgr
 from api.common.exceptions import AdminException
 
-admin_bp = Blueprint('admin', __name__, url_prefix='/api/v1/admin')
+admin_bp = Blueprint("admin", __name__, url_prefix="/api/v1/admin")
 
 
-@admin_bp.route('/auth', methods=['GET'])
+@admin_bp.route("/auth", methods=["GET"])
 @login_verify
 def auth_admin():
     try:
@@ -17,7 +17,7 @@ def auth_admin():
         return error_response(str(e), 500)
 
 
-@admin_bp.route('/users', methods=['GET'])
+@admin_bp.route("/users", methods=["GET"])
 @login_verify
 def list_users():
     try:
@@ -27,22 +27,22 @@ def list_users():
         return error_response(str(e), 500)
 
 
-@admin_bp.route('/users', methods=['POST'])
+@admin_bp.route("/users", methods=["POST"])
 @login_verify
 def create_user():
     try:
         data = request.get_json()
-        if not data or 'username' not in data or 'password' not in data:
+        if not data or "username" not in data or "password" not in data:
             return error_response("Username and password are required", 400)
 
-        username = data['username']
-        password = data['password']
-        role = data.get('role', 'user')
+        username = data["username"]
+        password = data["password"]
+        role = data.get("role", "user")
 
         res = UserMgr.create_user(username, password, role)
         if res["success"]:
             user_info = res["user_info"]
-            user_info.pop("password") # do not return password
+            user_info.pop("password")  # do not return password
             return success_response(user_info, "User created successfully")
         else:
             return error_response("create user failed")
@@ -53,7 +53,7 @@ def create_user():
         return error_response(str(e))
 
 
-@admin_bp.route('/users/<username>', methods=['DELETE'])
+@admin_bp.route("/users/<username>", methods=["DELETE"])
 @login_verify
 def delete_user(username):
     try:
@@ -69,15 +69,15 @@ def delete_user(username):
         return error_response(str(e), 500)
 
 
-@admin_bp.route('/users/<username>/password', methods=['PUT'])
+@admin_bp.route("/users/<username>/password", methods=["PUT"])
 @login_verify
 def change_password(username):
     try:
         data = request.get_json()
-        if not data or 'new_password' not in data:
+        if not data or "new_password" not in data:
             return error_response("New password is required", 400)
 
-        new_password = data['new_password']
+        new_password = data["new_password"]
         msg = UserMgr.update_user_password(username, new_password)
         return success_response(None, msg)
 
@@ -87,14 +87,14 @@ def change_password(username):
         return error_response(str(e), 500)
 
 
-@admin_bp.route('/users/<username>/activate', methods=['PUT'])
+@admin_bp.route("/users/<username>/activate", methods=["PUT"])
 @login_verify
 def alter_user_activate_status(username):
     try:
         data = request.get_json()
-        if not data or 'activate_status' not in data:
+        if not data or "activate_status" not in data:
             return error_response("Activation status is required", 400)
-        activate_status = data['activate_status']
+        activate_status = data["activate_status"]
         msg = UserMgr.update_user_activate_status(username, activate_status)
         return success_response(None, msg)
     except AdminException as e:
@@ -102,7 +102,8 @@ def alter_user_activate_status(username):
     except Exception as e:
         return error_response(str(e), 500)
 
-@admin_bp.route('/users/<username>', methods=['GET'])
+
+@admin_bp.route("/users/<username>", methods=["GET"])
 @login_verify
 def get_user_details(username):
     try:
@@ -114,7 +115,8 @@ def get_user_details(username):
     except Exception as e:
         return error_response(str(e), 500)
 
-@admin_bp.route('/users/<username>/datasets', methods=['GET'])
+
+@admin_bp.route("/users/<username>/datasets", methods=["GET"])
 @login_verify
 def get_user_datasets(username):
     try:
@@ -127,7 +129,7 @@ def get_user_datasets(username):
         return error_response(str(e), 500)
 
 
-@admin_bp.route('/users/<username>/agents', methods=['GET'])
+@admin_bp.route("/users/<username>/agents", methods=["GET"])
 @login_verify
 def get_user_agents(username):
     try:
@@ -140,7 +142,7 @@ def get_user_agents(username):
         return error_response(str(e), 500)
 
 
-@admin_bp.route('/services', methods=['GET'])
+@admin_bp.route("/services", methods=["GET"])
 @login_verify
 def get_services():
     try:
@@ -150,7 +152,7 @@ def get_services():
         return error_response(str(e), 500)
 
 
-@admin_bp.route('/service_types/<service_type>', methods=['GET'])
+@admin_bp.route("/service_types/<service_type>", methods=["GET"])
 @login_verify
 def get_services_by_type(service_type_str):
     try:
@@ -160,7 +162,7 @@ def get_services_by_type(service_type_str):
         return error_response(str(e), 500)
 
 
-@admin_bp.route('/services/<service_id>', methods=['GET'])
+@admin_bp.route("/services/<service_id>", methods=["GET"])
 @login_verify
 def get_service(service_id):
     try:
@@ -170,7 +172,7 @@ def get_service(service_id):
         return error_response(str(e), 500)
 
 
-@admin_bp.route('/services/<service_id>', methods=['DELETE'])
+@admin_bp.route("/services/<service_id>", methods=["DELETE"])
 @login_verify
 def shutdown_service(service_id):
     try:
@@ -180,7 +182,7 @@ def shutdown_service(service_id):
         return error_response(str(e), 500)
 
 
-@admin_bp.route('/services/<service_id>', methods=['PUT'])
+@admin_bp.route("/services/<service_id>", methods=["PUT"])
 @login_verify
 def restart_service(service_id):
     try:

@@ -12,8 +12,8 @@ You are tasked with reading and analyzing tool call result based on the followin
   - Select the information from the Searched Web Pages that directly contributes to advancing the previous reasoning steps.
   - Ensure that the extracted information is accurate and relevant.
 
-  - **Inputs for current call:**  
+  - **Inputs for current call:**
   {{ inputs }}
 
-  - **Results:**  
+  - **Results:**
   {{ results }}

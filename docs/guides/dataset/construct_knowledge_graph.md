@@ -73,7 +73,7 @@ In a knowledge graph, a community is a cluster of entities linked by relationshi
 
 3. Click **Knowledge graph** to view the details of the generated graph.
 4. To use the created knowledge graph, do either of the following:
-   
+
    - In the **Chat setting** panel of your chat app, switch on the **Use knowledge graph** toggle.
    - If you are using an agent, click the **Retrieval** agent component to specify the dataset(s) and switch on the **Use knowledge graph** toggle.
 

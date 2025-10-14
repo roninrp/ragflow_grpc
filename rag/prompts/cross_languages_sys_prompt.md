@@ -32,4 +32,3 @@ Chinese, French, Japanese
 Bonjour le monde ! Parlons de la sécurité de l'IA.
 ###
 こんにちは世界！AIの安全性について話し合いましょう。
-

@@ -41,9 +41,9 @@ class CommunityReportsExtractor(Extractor):
     _max_report_length: int
 
     def __init__(
-            self,
-            llm_invoker: CompletionLLM,
-            max_report_length: int | None = None,
+        self,
+        llm_invoker: CompletionLLM,
+        max_report_length: int | None = None,
     ):
         super().__init__(llm_invoker)
         """Init method definition."""
@@ -61,6 +61,7 @@ class CommunityReportsExtractor(Extractor):
         res_str = []
         res_dict = []
         over, token_count = 0, 0
+
         @timeout(120)
         async def extract_community_report(community):
             nonlocal res_str, res_dict, over, token_count
@@ -87,15 +88,12 @@ class CommunityReportsExtractor(Extractor):
                     k += 1
             rela_df = pd.DataFrame(rela_list)
 
-            prompt_variables = {
-                "entity_df": ent_df.to_csv(index_label="id"),
-                "relation_df": rela_df.to_csv(index_label="id")
-            }
+            prompt_variables = {"entity_df": ent_df.to_csv(index_label="id"), "relation_df": rela_df.to_csv(index_label="id")}
             text = perform_variable_replacements(self._extraction_prompt, variables=prompt_variables)
             async with chat_limiter:
                 try:
                     with trio.move_on_after(180 if enable_timeout_assertion else 1000000000) as cancel_scope:
-                        response = await trio.to_thread.run_sync( self._chat, text, [{"role": "user", "content": "Output:"}], {})
+                        response = await trio.to_thread.run_sync(self._chat, text, [{"role": "user", "content": "Output:"}], {})
                     if cancel_scope.cancelled_caught:
                         logging.warning("extract_community_report._chat timeout, skipping...")
                         return
@@ -114,13 +112,16 @@ class CommunityReportsExtractor(Extractor):
                 logging.error(f"Failed to parse JSON response: {e}")
                 logging.error(f"Response content: {response}")
                 return
-            if not dict_has_keys_with_types(response, [
-                        ("title", str),
-                        ("summary", str),
-                        ("findings", list),
-                        ("rating", float),
-                        ("rating_explanation", str),
-                    ]):
+            if not dict_has_keys_with_types(
+                response,
+                [
+                    ("title", str),
+                    ("summary", str),
+                    ("findings", list),
+                    ("rating", float),
+                    ("rating_explanation", str),
+                ],
+            ):
                 return
             response["weight"] = weight
             response["entities"] = ents
@@ -160,7 +161,5 @@ class CommunityReportsExtractor(Extractor):
                 return ""
             return finding.get("explanation")
 
-        report_sections = "\n\n".join(
-            f"## {finding_summary(f)}\n\n{finding_explanation(f)}" for f in findings
-        )
+        report_sections = "\n\n".join(f"## {finding_summary(f)}\n\n{finding_explanation(f)}" for f in findings)
         return f"# {title}\n\n{summary}\n\n{report_sections}"

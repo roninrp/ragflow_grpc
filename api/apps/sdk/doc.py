@@ -1002,9 +1002,7 @@ def list_chunks(tenant_id, dataset_id, document_id):
     return get_result(data=res)
 
 
-@manager.route(  # noqa: F821
-    "/datasets/<dataset_id>/documents/<document_id>/chunks", methods=["POST"]
-)
+@manager.route("/datasets/<dataset_id>/documents/<document_id>/chunks", methods=["POST"])  # noqa: F821
 @token_required
 def add_chunk(tenant_id, dataset_id, document_id):
     """
@@ -1131,9 +1129,7 @@ def add_chunk(tenant_id, dataset_id, document_id):
     # return get_result(data={"chunk_id": chunk_id})
 
 
-@manager.route(  # noqa: F821
-    "datasets/<dataset_id>/documents/<document_id>/chunks", methods=["DELETE"]
-)
+@manager.route("datasets/<dataset_id>/documents/<document_id>/chunks", methods=["DELETE"])  # noqa: F821
 @token_required
 def rm_chunk(tenant_id, dataset_id, document_id):
     """
@@ -1202,9 +1198,7 @@ def rm_chunk(tenant_id, dataset_id, document_id):
     return get_result(message=f"deleted {chunk_number} chunks")
 
 
-@manager.route(  # noqa: F821
-    "/datasets/<dataset_id>/documents/<document_id>/chunks/<chunk_id>", methods=["PUT"]
-)
+@manager.route("/datasets/<dataset_id>/documents/<document_id>/chunks/<chunk_id>", methods=["PUT"])  # noqa: F821
 @token_required
 def update_chunk(tenant_id, dataset_id, document_id, chunk_id):
     """

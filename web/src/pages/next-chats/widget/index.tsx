@@ -10,10 +10,10 @@ const ChatWidget = () => {
       }}
     >
       <style>{`
-        html, body { 
-          background: transparent !important; 
-          margin: 0; 
-          padding: 0; 
+        html, body {
+          background: transparent !important;
+          margin: 0;
+          padding: 0;
         }
         #root {
           background: transparent !important;

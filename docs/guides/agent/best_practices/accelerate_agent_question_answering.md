@@ -13,7 +13,7 @@ Please note that some of your settings may consume a significant amount of time.
 
 ## Balance task complexity with an Agent’s performance and speed?
 
-An Agent’s response time generally depends on many factors, e.g., the LLM’s capabilities and the prompt, the latter reflecting task complexity. When using an Agent, you should always balance task demands with the LLM’s ability. 
+An Agent’s response time generally depends on many factors, e.g., the LLM’s capabilities and the prompt, the latter reflecting task complexity. When using an Agent, you should always balance task demands with the LLM’s ability.
 
 - For simple tasks, such as retrieval, rewriting, formatting, or structured data extraction, use concise prompts, remove planning or reasoning instructions, enforce output length limits, and select smaller or Turbo-class models. This significantly reduces latency and cost with minimal impact on quality.
 
@@ -34,13 +34,13 @@ Disabling the **Reasoning** toggle will reduce the LLM's thinking time. For a mo
 - Leaving the **Rerank model** field empty (in the corresponding **Retrieval** component) will significantly decrease retrieval time.
 - When using a rerank model, ensure you have a GPU for acceleration; otherwise, the reranking process will be *prohibitively* slow.
 
-:::tip NOTE 
+:::tip NOTE
 Please note that rerank models are essential in certain scenarios. There is always a trade-off between speed and performance; you must weigh the pros against cons for your specific case.
 :::
 
 ## Check the time taken for each task
 
-Click the light bulb icon above the *current* dialogue and scroll down the popup window to view the time taken for each task:  
+Click the light bulb icon above the *current* dialogue and scroll down the popup window to view the time taken for each task:
 
 
 

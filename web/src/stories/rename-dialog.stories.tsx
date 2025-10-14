@@ -40,7 +40,7 @@ import { useState } from 'react';
 function MyComponent() {
   const [visible, setVisible] = useState(false);
   const [loading, setLoading] = useState(false);
-  
+
   return (
     <div>
       <Button onClick={() => setVisible(true)}>

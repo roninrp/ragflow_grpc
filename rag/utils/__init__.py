@@ -48,7 +48,7 @@ def findMaxDt(fnm):
                 if not line:
                     break
                 line = line.strip("\n")
-                if line == 'nan':
+                if line == "nan":
                     continue
                 if line > m:
                     m = line
@@ -66,7 +66,7 @@ def findMaxTm(fnm):
                 if not line:
                     break
                 line = line.strip("\n")
-                if line == 'nan':
+                if line == "nan":
                     continue
                 if int(line) > m:
                     m = int(line)
@@ -88,6 +88,7 @@ def num_tokens_from_string(string: str) -> int:
     except Exception:
         return 0
 
+
 def total_token_count_from_response(resp):
     if hasattr(resp, "usage") and hasattr(resp.usage, "total_tokens"):
         try:
@@ -95,7 +96,7 @@ def total_token_count_from_response(resp):
         except Exception:
             pass
 
-    if 'usage' in resp and 'total_tokens' in resp['usage']:
+    if "usage" in resp and "total_tokens" in resp["usage"]:
         try:
             return resp["usage"]["total_tokens"]
         except Exception:
@@ -107,18 +108,17 @@ def truncate(string: str, max_len: int) -> str:
     """Returns truncated text if the length of text exceed max_len."""
     return encoder.decode(encoder.encode(string)[:max_len])
 
-  
+
 def clean_markdown_block(text):
-    text = re.sub(r'^\s*```markdown\s*\n?', '', text)
-    text = re.sub(r'\n?\s*```\s*$', '', text)
+    text = re.sub(r"^\s*```markdown\s*\n?", "", text)
+    text = re.sub(r"\n?\s*```\s*$", "", text)
     return text.strip()
 
-  
+
 def get_float(v):
     if v is None:
-        return float('-inf')
+        return float("-inf")
     try:
         return float(v)
     except Exception:
-        return float('-inf')
-
+        return float("-inf")

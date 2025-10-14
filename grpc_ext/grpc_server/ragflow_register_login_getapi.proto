@@ -1,0 +1,37 @@
+syntax = "proto3";
+
+package ragflow;
+
+// Define the service
+service RagServices {
+  // Register user in Ragflow
+  rpc Registration (RegistrationCredentials) returns (ResponseString);
+
+  // Login user in Ragflow
+  rpc Login (LoginCredentials) returns (ResponseString);
+
+  // New API key for user in Ragflow
+  rpc GetApiKey (LoginCredentials) returns (ResponseString);
+}
+
+// The Response message containing a server reply
+message ResponseString {
+  string reply = 1;
+}
+
+// The registration credentials containing email, name, password
+message RegistrationCredentials{
+  string email = 1;
+  string name = 2;
+  string encrypted_password = 3;
+  string nonce = 4;
+  string tag = 5;
+}
+
+// The login credentials containing email, password
+message LoginCredentials{
+  string email = 1;
+  string encrypted_password = 2;
+  string nonce = 3;
+  string tag = 4;
+}

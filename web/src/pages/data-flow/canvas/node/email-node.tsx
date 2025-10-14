@@ -65,7 +65,7 @@ export function InnerEmailNode({
             <pre className={styles.jsonContent}>
               {`{
   "to_email": "...",
-  "cc_email": "...", 
+  "cc_email": "...",
   "subject": "...",
   "content": "..."
 }`}

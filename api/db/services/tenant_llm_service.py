@@ -85,6 +85,7 @@ class TenantLLMService(CommonService):
     @DB.connection_context()
     def get_model_config(cls, tenant_id, llm_type, llm_name=None):
         from api.db.services.llm_service import LLMService
+
         e, tenant = TenantService.get_by_id(tenant_id)
         if not e:
             raise LookupError("Tenant not found")
@@ -217,6 +218,7 @@ class TenantLLMService(CommonService):
     @staticmethod
     def llm_id2llm_type(llm_id: str) -> str | None:
         from api.db.services.llm_service import LLMService
+
         llm_id, *_ = TenantLLMService.split_model_name_and_factory(llm_id)
         llm_factories = settings.FACTORY_LLM_INFOS
         for llm_factory in llm_factories:

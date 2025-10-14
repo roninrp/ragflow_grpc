@@ -60,21 +60,21 @@ from rag.utils.mcp_tool_call_conn import MCPToolCallSession, close_multiple_mcp_
 
 requests.models.complexjson.dumps = functools.partial(json.dumps, cls=CustomJSONEncoder)
 
+
 def serialize_for_json(obj):
     """
     Recursively serialize objects to make them JSON serializable.
     Handles ModelMetaclass and other non-serializable objects.
     """
-    if hasattr(obj, '__dict__'):
+    if hasattr(obj, "__dict__"):
         # For objects with __dict__, try to serialize their attributes
         try:
-            return {key: serialize_for_json(value) for key, value in obj.__dict__.items() 
-                   if not key.startswith('_')}
+            return {key: serialize_for_json(value) for key, value in obj.__dict__.items() if not key.startswith("_")}
         except (AttributeError, TypeError):
             return str(obj)
-    elif hasattr(obj, '__name__'):
+    elif hasattr(obj, "__name__"):
         # For classes and metaclasses, return their name
-        return f"<{obj.__module__}.{obj.__name__}>" if hasattr(obj, '__module__') else f"<{obj.__name__}>"
+        return f"<{obj.__module__}.{obj.__name__}>" if hasattr(obj, "__module__") else f"<{obj.__name__}>"
     elif isinstance(obj, (list, tuple)):
         return [serialize_for_json(item) for item in obj]
     elif isinstance(obj, dict):
@@ -84,6 +84,7 @@ def serialize_for_json(obj):
     else:
         # Fallback: convert to string representation
         return str(obj)
+
 
 def request(**kwargs):
     sess = requests.Session()
@@ -158,7 +159,7 @@ def server_error_response(e):
     if len(e.args) > 1:
         try:
             serialized_data = serialize_for_json(e.args[1])
-            return get_json_result(code= settings.RetCode.EXCEPTION_ERROR, message=repr(e.args[0]), data=serialized_data)
+            return get_json_result(code=settings.RetCode.EXCEPTION_ERROR, message=repr(e.args[0]), data=serialized_data)
         except Exception:
             return get_json_result(code=settings.RetCode.EXCEPTION_ERROR, message=repr(e.args[0]), data=None)
     if repr(e).find("index_not_found_exception") >= 0:
@@ -239,6 +240,7 @@ def active_required(f):
         if not usr or not usr.is_active == ActiveEnum.ACTIVE.value:
             return get_json_result(code=settings.RetCode.FORBIDDEN, message="User isn't active, please activate first.")
         return f(*args, **kwargs)
+
     return wrapper
 
 
@@ -440,18 +442,7 @@ def get_parser_config(chunk_method, parser_config):
     return merged_config
 
 
-def get_data_openai(
-    id=None,
-    created=None,
-    model=None,
-    prompt_tokens=0,
-    completion_tokens=0,
-    content=None,
-    finish_reason=None,
-    object="chat.completion",
-    param=None,
-    stream=False
-):
+def get_data_openai(id=None, created=None, model=None, prompt_tokens=0, completion_tokens=0, content=None, finish_reason=None, object="chat.completion", param=None, stream=False):
     total_tokens = prompt_tokens + completion_tokens
 
     if stream:
@@ -459,11 +450,13 @@ def get_data_openai(
             "id": f"{id}",
             "object": "chat.completion.chunk",
             "model": model,
-            "choices": [{
-                "delta": {"content": content},
-                "finish_reason": finish_reason,
-                "index": 0,
-            }],
+            "choices": [
+                {
+                    "delta": {"content": content},
+                    "finish_reason": finish_reason,
+                    "index": 0,
+                }
+            ],
         }
 
     return {
@@ -482,15 +475,14 @@ def get_data_openai(
                 "rejected_prediction_tokens": 0,
             },
         },
-        "choices": [{
-            "message": {
-                "role": "assistant",
-                "content": content
-            },
-            "logprobs": None,
-            "finish_reason": finish_reason,
-            "index": 0,
-        }],
+        "choices": [
+            {
+                "message": {"role": "assistant", "content": content},
+                "logprobs": None,
+                "finish_reason": finish_reason,
+                "index": 0,
+            }
+        ],
     }
 
 

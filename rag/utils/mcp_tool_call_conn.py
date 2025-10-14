@@ -240,7 +240,7 @@ def shutdown_all_mcp_sessions():
     logging.info("All MCPToolCallSession instances have been closed.")
 
 
-def mcp_tool_metadata_to_openai_tool(mcp_tool: Tool|dict) -> dict[str, Any]:
+def mcp_tool_metadata_to_openai_tool(mcp_tool: Tool | dict) -> dict[str, Any]:
     if isinstance(mcp_tool, dict):
         return {
             "type": "function",

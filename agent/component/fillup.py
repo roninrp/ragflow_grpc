@@ -17,7 +17,6 @@ from agent.component.base import ComponentBase, ComponentParamBase
 
 
 class UserFillUpParam(ComponentParamBase):
-
     def __init__(self):
         super().__init__()
         self.enable_tips = True
@@ -36,5 +35,3 @@ class UserFillUp(ComponentBase):
 
     def thoughts(self) -> str:
         return "Waiting for your input..."
-
-
