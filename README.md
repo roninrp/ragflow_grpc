@@ -150,7 +150,7 @@ These include:
 ---
 
 ## 📘⚙️ Docs related to gRPC services
-Sphinx like docs can be found in 📚 `grpc_ext/docs/_build/html/index.html`.
+Sphinx like docs can be found in 📚 [grpc_ext/docs/_build/html/index.html](http://rawcdn.githack.com/roninrp/ragflow_grpc/main/grpc_ext/docs/_build/html/index.html) `grpc_ext/docs/_build/html/index.html`.
 
 These are placed in `grpc_ext/docs` and can be generated for the documentation in `grpc_ext/` by running
 ```
