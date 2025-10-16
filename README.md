@@ -21,7 +21,7 @@ Given this implementation, it can be seemlessly developed to incorporate more of
 ---
 
 ## 🧱 Project Structure
-The project uses Ragflows modules and files and therefore the system requirements are similar to that of Ragflow's with certain additional dependencies(ref). Apart from a few changes to Ragflow's files the main files are located within `ragflow_grpc/grpc_ext`.
+The project uses Ragflows modules and files and therefore the system requirements are similar to that of Ragflow's with certain additional dependencies(ref). Apart from a few changes to Ragflow's files the main files are located within `./grpc_ext`. Here `.` is the above root folder.
 ```
 grpc_ext/
 ├── Dockerfile
@@ -33,8 +33,8 @@ grpc_ext/
 ---
 
 ## ⚙️ System Requirements
-The hardware system requirements for running Ragflow are given in [README_RAG.html](../README_RAG.html) (Refer to the Get Started section...)
-The Makefile in ragflow/ will make sure your system meets the following requirements in a uv virtual environment.
+The hardware system requirements for running Ragflow are given in [README_RAG.html](../README_RAG.html) (Refer to the Get Started section...).
+The Makefile in the root folder will make sure your system meets the following requirements in a uv virtual environment.
 
 | Component | Minimum Version | Notes |
 |------------|----------------|-------|
@@ -46,7 +46,7 @@ The Makefile in ragflow/ will make sure your system meets the following requirem
 ---
 ## ⚙️ Usage guide
 ### Setting up the System
-To install, run from the projects root folder `ragflow_grpc/`:
+To install, run from the projects root folder (i.e. `ragflow_grpc/`) depending on what you name it:
 ```
 make setup
 ```
@@ -57,7 +57,7 @@ This installs:
 - dependencies from requirements-dev.txt and `grpc_ext/requirements.txt`
 - pre-commit hooks
 - turns down docker launched servers if any and removes orphans
-- builds no-cache docker container images using docker-compose-grpc.yml in `ragflow_grpc/docker/`
+- builds no-cache docker container images using docker-compose-grpc.yml in `./docker/`
 
 ### Starting the System
 To startup the servers, run from the root folder ragflow/:
@@ -66,7 +66,7 @@ make up
 ```
 
 This:
-- launches the docker containers built earlier via docker compose using the same docker-compose-grpc.yml in `ragflow_grpc/docker/`
+- launches the docker containers built earlier via docker compose using the same docker-compose-grpc.yml in `./docker/`
 - runs pytest to test for HTTP endpoints of Ragflow accessed by the gRPC server and
 - gRPC client methods for communicating with Ragflow.
 
@@ -112,7 +112,7 @@ This is located in `grpc_ext/` and is accessed by `docker/docker-compose-grpc.ym
 Original(unchanged) Ragflow docker-compose.yml file, can be used to deploy only Ragflow services.
 
 
-### `grpc_ext/requirements.txt`
+### `./grpc_ext/requirements.txt`
 Contains modules for gRPC operation.
 
 ### `requirements-dev.txt`
@@ -121,10 +121,10 @@ Contains developer related modules.
 ---
 
 ## 🖥️ gRPC Server
-These files are located in `grpc_ext/grpc_server`
+These files are located in `./grpc_ext/grpc_server`
 
 These include:
-- `grpc_async_server_ragserve.py` run by the docker file and launched by `docker/docker-compose-grpc.yml`.
+- `grpc_async_server_ragserve.py` run by the docker file and launched by `./docker/docker-compose-grpc.yml`.
 - `grpc_async_server_ragserve_ext.py` a copy of the above file but runs (if launched) on port `50061`.
 
 ## 🤝 gRPC Client
@@ -141,7 +141,7 @@ make test
 ```
 
 ### Test files
-These are located in `grpc_ext/grpc_server`
+These are located in `./grpc_ext/grpc_server`
 These include:
 - `endpoint_test.py` which tests Ragflow's endpoints accessed by the gRPC server.
 - `grpc_server_test.py` tests if the grpc server is still up on port `50051`.
@@ -151,10 +151,10 @@ These include:
 ---
 
 ## 📘⚙️ Docs related to gRPC services
-Sphinx like docs can be found in 📚 [grpc_ext/docs/_build/html/index.html](http://rawcdn.githack.com/roninrp/ragflow_grpc/main/grpc_ext/docs/_build/html/index.html) `grpc_ext/docs/_build/html/index.html`.
+Sphinx like docs can be found in 📚 [grpc_ext/docs/_build/html/index.html](http://rawcdn.githack.com/roninrp/ragflow_grpc/main/grpc_ext/docs/_build/html/index.html) `./grpc_ext/docs/_build/html/index.html`.
 
 These are placed in `grpc_ext/docs` and can be generated for the documentation in `grpc_ext/` by running
 ```
 make docs
 ```
-from the root folder (`ragflow_grpc`) and can be found in `grpc_ext/docs/_build/html/index.html`.
+from the root folder (`ragflow_grpc`) and can be found in `./grpc_ext/docs/_build/html/index.html`.
