@@ -27,7 +27,7 @@ env:
 		echo "=========================================================="; \
 		echo "Adding dev tools: pre-commit, black, ruff..."; \
 		echo "=========================================================="; \
-		uv add requirements-dev.txt; \
+		uv add -r requirements-dev.txt; \
 	else \
 		echo "Virtual environment $(VENV_NAME) already exists — skipping creation."; \
 	fi
