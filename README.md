@@ -18,10 +18,13 @@ This project demonstrates the barebones of how to have an asnchronous gRPC serve
 
 Given this implementation, it can be seemlessly developed to incorporate more of Ragflow's HTTP endpoints.
 
+The above files are directly forked from Ragflow and an extra `./grpc_ext` folder implemeting async gRPC server and client has been added.
+Apart from these few of the Ragflow's files have been tweeked- see below for a full description.
+
 ---
 
 ## 🧱 Project Structure
-The project uses Ragflows modules and files and therefore the system requirements are similar to that of Ragflow's with certain additional dependencies(ref). Apart from a few changes to Ragflow's files the main files are located within `./grpc_ext`. Here `.` is the above root folder.
+The project uses Ragflows modules and files and therefore the system requirements are similar to that of Ragflow's with certain additional dependencies(ref). Apart from a few changes to Ragflow's files the additional gRPC files are located within `./grpc_ext`. Here `.` is the above root folder.
 ```
 grpc_ext/
 ├── Dockerfile

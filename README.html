@@ -24586,9 +24586,11 @@ This project demonstrates the barebones of how to have an asnchronous gRPC serve
 <li>generate a new api token for a given user.</li>
 </ul>
 <p>Given this implementation, it can be seemlessly developed to incorporate more of Ragflow's HTTP endpoints.</p>
+<p>The above files are directly forked from Ragflow and an extra <code>./grpc_ext</code> folder implemeting async gRPC server and client has been added.
+Apart from these few of the Ragflow's files have been tweeked- see below for a full description.</p>
 <hr>
 <div class="markdown-heading"><h2 class="heading-element">🧱 Project Structure</h2><a id="user-content--project-structure" class="anchor" aria-label="Permalink: 🧱 Project Structure" href="#-project-structure"><span aria-hidden="true" class="octicon octicon-link"></span></a></div>
-<p>The project uses Ragflows modules and files and therefore the system requirements are similar to that of Ragflow's with certain additional dependencies(ref). Apart from a few changes to Ragflow's files the main files are located within <code>ragflow_grpc/grpc_ext</code>.</p>
+<p>The project uses Ragflows modules and files and therefore the system requirements are similar to that of Ragflow's with certain additional dependencies(ref). Apart from a few changes to Ragflow's files the additional gRPC files are located within <code>./grpc_ext</code>. Here <code>.</code> is the above root folder.</p>
 <pre><code>grpc_ext/
 ├── Dockerfile
 ├── docs
@@ -24598,8 +24600,8 @@ This project demonstrates the barebones of how to have an asnchronous gRPC serve
 </code></pre>
 <hr>
 <div class="markdown-heading"><h2 class="heading-element">⚙️ System Requirements</h2><a id="user-content-️-system-requirements" class="anchor" aria-label="Permalink: ⚙️ System Requirements" href="#️-system-requirements"><span aria-hidden="true" class="octicon octicon-link"></span></a></div>
-<p>The hardware system requirements for running Ragflow are given in <a href="../README_RAG.html">README_RAG.html</a> (Refer to the Get Started section...)
-The Makefile in ragflow/ will make sure your system meets the following requirements in a uv virtual environment.</p>
+<p>The hardware system requirements for running Ragflow are given in <a href="../README_RAG.html">README_RAG.html</a> (Refer to the Get Started section...).
+The Makefile in the root folder will make sure your system meets the following requirements in a uv virtual environment.</p>
 <table>
 <thead>
 <tr>
@@ -24634,17 +24636,19 @@ The Makefile in ragflow/ will make sure your system meets the following requirem
 <hr>
 <div class="markdown-heading"><h2 class="heading-element">⚙️ Usage guide</h2><a id="user-content-️-usage-guide" class="anchor" aria-label="Permalink: ⚙️ Usage guide" href="#️-usage-guide"><span aria-hidden="true" class="octicon octicon-link"></span></a></div>
 <div class="markdown-heading"><h3 class="heading-element">Setting up the System</h3><a id="user-content-setting-up-the-system" class="anchor" aria-label="Permalink: Setting up the System" href="#setting-up-the-system"><span aria-hidden="true" class="octicon octicon-link"></span></a></div>
-<p>To install, run from the projects root folder <code>ragflow_grpc/</code>:</p>
+<p>To install, run from the projects root folder (i.e. <code>ragflow_grpc/</code>) depending on what you name it:</p>
 <pre><code>make setup
 </code></pre>
 <p>This installs:</p>
 <ul>
 <li>uv and a virtual environment for the project</li>
 <li>python=3.10 and pins it to it</li>
-<li>dependencies from requirements-dev.txt and grpc_ext/requirements.txt</li>
+<li>dependencies from requirements-dev.txt and <code>grpc_ext/requirements.txt</code>
+</li>
 <li>pre-commit hooks</li>
 <li>turns down docker launched servers if any and removes orphans</li>
-<li>builds no-cache docker container images using docker-compose-grpc.yml in ragflow/docker/</li>
+<li>builds no-cache docker container images using docker-compose-grpc.yml in <code>./docker/</code>
+</li>
 </ul>
 <div class="markdown-heading"><h3 class="heading-element">Starting the System</h3><a id="user-content-starting-the-system" class="anchor" aria-label="Permalink: Starting the System" href="#starting-the-system"><span aria-hidden="true" class="octicon octicon-link"></span></a></div>
 <p>To startup the servers, run from the root folder ragflow/:</p>
@@ -24652,7 +24656,8 @@ The Makefile in ragflow/ will make sure your system meets the following requirem
 </code></pre>
 <p>This:</p>
 <ul>
-<li>launches the docker containers built earlier via docker compose using the same docker-compose-grpc.yml in ragflow/docker/</li>
+<li>launches the docker containers built earlier via docker compose using the same docker-compose-grpc.yml in <code>./docker/</code>
+</li>
 <li>runs pytest to test for HTTP endpoints of Ragflow accessed by the gRPC server and</li>
 <li>gRPC client methods for communicating with Ragflow.</li>
 </ul>
@@ -24688,17 +24693,17 @@ The access to Ragflow's UI can be obtained from <code>http://localhost:9380</cod
 <p>This is located in <code>grpc_ext/</code> and is accessed by <code>docker/docker-compose-grpc.yml</code> to launch a gRPC service named <code>ragflow-grpc-server</code>.</p>
 <div class="markdown-heading"><h3 class="heading-element"><code>docker/docker-compose.yml</code></h3><a id="user-content-dockerdocker-composeyml" class="anchor" aria-label="Permalink: docker/docker-compose.yml" href="#dockerdocker-composeyml"><span aria-hidden="true" class="octicon octicon-link"></span></a></div>
 <p>Original(unchanged) Ragflow docker-compose.yml file, can be used to deploy only Ragflow services.</p>
-<div class="markdown-heading"><h3 class="heading-element"><code>grpc_ext/requirements.txt</code></h3><a id="user-content-grpc_extrequirementstxt" class="anchor" aria-label="Permalink: grpc_ext/requirements.txt" href="#grpc_extrequirementstxt"><span aria-hidden="true" class="octicon octicon-link"></span></a></div>
+<div class="markdown-heading"><h3 class="heading-element"><code>./grpc_ext/requirements.txt</code></h3><a id="user-content-grpc_extrequirementstxt" class="anchor" aria-label="Permalink: ./grpc_ext/requirements.txt" href="#grpc_extrequirementstxt"><span aria-hidden="true" class="octicon octicon-link"></span></a></div>
 <p>Contains modules for gRPC operation.</p>
 <div class="markdown-heading"><h3 class="heading-element"><code>requirements-dev.txt</code></h3><a id="user-content-requirements-devtxt" class="anchor" aria-label="Permalink: requirements-dev.txt" href="#requirements-devtxt"><span aria-hidden="true" class="octicon octicon-link"></span></a></div>
 <p>Contains developer related modules.</p>
 <hr>
 <div class="markdown-heading"><h2 class="heading-element">🖥️ gRPC Server</h2><a id="user-content-️-grpc-server" class="anchor" aria-label="Permalink: 🖥️ gRPC Server" href="#️-grpc-server"><span aria-hidden="true" class="octicon octicon-link"></span></a></div>
-<p>These files are located in <code>grpc_ext/grpc_server</code></p>
+<p>These files are located in <code>./grpc_ext/grpc_server</code></p>
 <p>These include:</p>
 <ul>
 <li>
-<code>grpc_async_server_ragserve.py</code> run by the docker file and launched by <code>docker/docker-compose-grpc.yml</code>.</li>
+<code>grpc_async_server_ragserve.py</code> run by the docker file and launched by <code>./docker/docker-compose-grpc.yml</code>.</li>
 <li>
 <code>grpc_async_server_ragserve_ext.py</code> a copy of the above file but runs (if launched) on port <code>50061</code>.</li>
 </ul>
@@ -24716,7 +24721,7 @@ The access to Ragflow's UI can be obtained from <code>http://localhost:9380</cod
 <pre><code>make test
 </code></pre>
 <div class="markdown-heading"><h3 class="heading-element">Test files</h3><a id="user-content-test-files" class="anchor" aria-label="Permalink: Test files" href="#test-files"><span aria-hidden="true" class="octicon octicon-link"></span></a></div>
-<p>These are located in <code>grpc_ext/grpc_server</code>
+<p>These are located in <code>./grpc_ext/grpc_server</code>
 These include:</p>
 <ul>
 <li>
@@ -24728,11 +24733,11 @@ These include:</p>
 </ul>
 <hr>
 <div class="markdown-heading"><h2 class="heading-element">📘⚙️ Docs related to gRPC services</h2><a id="user-content-️-docs-related-to-grpc-services" class="anchor" aria-label="Permalink: 📘⚙️ Docs related to gRPC services" href="#️-docs-related-to-grpc-services"><span aria-hidden="true" class="octicon octicon-link"></span></a></div>
-<p>Sphinx like docs can be found in 📚 <a href="http://rawcdn.githack.com/roninrp/ragflow_grpc/main/grpc_ext/docs/_build/html/index.html" rel="nofollow">grpc_ext/docs/_build/html/index.html</a> <code>grpc_ext/docs/_build/html/index.html</code>.</p>
+<p>Sphinx like docs can be found in 📚 <a href="http://rawcdn.githack.com/roninrp/ragflow_grpc/main/grpc_ext/docs/_build/html/index.html" rel="nofollow">grpc_ext/docs/_build/html/index.html</a> <code>./grpc_ext/docs/_build/html/index.html</code>.</p>
 <p>These are placed in <code>grpc_ext/docs</code> and can be generated for the documentation in <code>grpc_ext/</code> by running</p>
 <pre><code>make docs
 </code></pre>
-<p>from the root folder (<code>ragflow_grpc</code>) and can be found in <code>grpc_ext/docs/_build/html/index.html</code>.</p>
+<p>from the root folder (<code>ragflow_grpc</code>) and can be found in <code>./grpc_ext/docs/_build/html/index.html</code>.</p>
 
                       </article>
                     </div>
