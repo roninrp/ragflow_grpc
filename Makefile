@@ -14,7 +14,7 @@ env:
 		echo "=========================================================="; \
 		echo "Creating virtual environment named $(VENV_NAME)..."; \
 		echo "=========================================================="; \
-		uv venv $(VENV_NAME) --python 3.10; \
+		uv python pin 3.10; \
 		uv venv $(VENV_NAME) --python 3.10; \
 		echo "=========================================================="; \
 		echo "Upgrading pip, setuptools, wheel..."; \
